@@ -1,0 +1,19 @@
+{
+  "name": "lia-orthography",
+  "version": "0.0.1",
+  "description": "LiaScript plugin — orthography exercises with gated resolve, sticky solutions, and reset",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "parcel build src/index.ts --dist-dir dist --no-scope-hoist"
+  },
+  "keywords": [
+    "liascript",
+    "plugin",
+    "orthography",
+    "education"
+  ],
+  "devDependencies": {
+    "parcel": "^2.12.0",
+    "typescript": "^5.3.3"
+  }
+}
