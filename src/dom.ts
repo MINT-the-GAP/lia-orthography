@@ -28,7 +28,6 @@ export function ensureStyle(installed: { done: boolean }): void {
         grid-column:1;
         min-width:0;
         width:100%;
-        margin-bottom:0 !important;
       }
 
       .orthography-wrap > .ortho-reset-below{

@@ -66,7 +66,6 @@ function $2f96dbadf81a4e19$export$b9324dd3ed41badd(installed) {
         grid-column:1;
         min-width:0;
         width:100%;
-        margin-bottom:0 !important;
       }
 
       .orthography-wrap > .ortho-reset-below{
