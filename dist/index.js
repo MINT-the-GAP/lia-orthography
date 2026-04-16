@@ -330,7 +330,6 @@ function $f322f17f239b2b8e$export$d1e86e2cf4ed4afc(stateMap) {
     });
 }
 function $f322f17f239b2b8e$export$702081a5d9f33ebc(stateMap, flags) {
-    clearTimeout(flags.lateSyncTimer ?? undefined);
     if (flags.syncScheduled) return;
     flags.syncScheduled = true;
     const run = ()=>{
@@ -342,6 +341,7 @@ function $f322f17f239b2b8e$export$702081a5d9f33ebc(stateMap, flags) {
     } catch (e) {
         setTimeout(run, 16);
     }
+    clearTimeout(flags.lateSyncTimer ?? undefined);
     flags.lateSyncTimer = window.setTimeout(()=>$f322f17f239b2b8e$export$d1e86e2cf4ed4afc(stateMap), 90);
 }
 

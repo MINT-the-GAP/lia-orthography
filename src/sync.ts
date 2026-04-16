@@ -137,8 +137,6 @@ export function scheduleSync(
   stateMap: Record<string, OrthographyState>,
   flags: { syncScheduled: boolean; lateSyncTimer: number | null }
 ): void {
-  clearTimeout(flags.lateSyncTimer ?? undefined);
-
   if (flags.syncScheduled) return;
   flags.syncScheduled = true;
 
@@ -149,5 +147,6 @@ export function scheduleSync(
 
   try { requestAnimationFrame(run); } catch(e) { setTimeout(run, 16); }
 
+  clearTimeout(flags.lateSyncTimer ?? undefined);
   flags.lateSyncTimer = window.setTimeout(() => syncAll(stateMap), 90);
 }
