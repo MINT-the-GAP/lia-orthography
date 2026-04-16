@@ -197,6 +197,16 @@ export function startGlobal(
     handleInput(stateMap, uid);
   }, true);
 
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight") return;
+    const target = ev.target;
+    if (!(target instanceof Element)) return;
+    const uid = getUidFromOrthographyInput(target);
+    if (!uid) return;
+    ev.stopPropagation();
+    if ((ev as any).stopImmediatePropagation) (ev as any).stopImmediatePropagation();
+  }, true);
+
   document.addEventListener("click", (ev) => {
     const target = ev.target;
     if (!(target instanceof Element)) return;

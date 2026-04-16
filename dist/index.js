@@ -470,6 +470,15 @@ function $a541277566782c5f$export$2baef26cee7194d4(stateMap, flags, observer) {
         if (!uid) return;
         $a541277566782c5f$var$handleInput(stateMap, uid);
     }, true);
+    document.addEventListener("keydown", (ev)=>{
+        if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight") return;
+        const target = ev.target;
+        if (!(target instanceof Element)) return;
+        const uid = $a541277566782c5f$var$getUidFromOrthographyInput(target);
+        if (!uid) return;
+        ev.stopPropagation();
+        if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+    }, true);
     document.addEventListener("click", (ev)=>{
         const target = ev.target;
         if (!(target instanceof Element)) return;
