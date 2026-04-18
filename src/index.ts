@@ -26,6 +26,14 @@ class OrthographyModule {
     S.cfg = cfg || null;
     S.gate = parseGate(cfg && cfg.gateRaw);
 
+    if (cfg && typeof cfg.startText === "string") {
+      S.start = cfg.startText;
+    }
+
+    if (cfg && typeof cfg.solutionText === "string") {
+      S.solution = cfg.solutionText;
+    }
+
     readStaticTexts(this.state, uid);
     syncUid(this.state, uid);
     scheduleSync(this.state, this.flags);

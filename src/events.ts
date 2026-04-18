@@ -198,7 +198,27 @@ export function startGlobal(
   }, true);
 
   document.addEventListener("keydown", (ev) => {
-    if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight") return;
+    if (
+      ev.key !== "ArrowLeft" &&
+      ev.key !== "ArrowRight" &&
+      ev.key !== "ArrowUp" &&
+      ev.key !== "ArrowDown"
+    ) return;
+    const target = ev.target;
+    if (!(target instanceof Element)) return;
+    const uid = getUidFromOrthographyInput(target);
+    if (!uid) return;
+    ev.stopPropagation();
+    if ((ev as any).stopImmediatePropagation) (ev as any).stopImmediatePropagation();
+  }, true);
+
+  document.addEventListener("keyup", (ev) => {
+    if (
+      ev.key !== "ArrowLeft" &&
+      ev.key !== "ArrowRight" &&
+      ev.key !== "ArrowUp" &&
+      ev.key !== "ArrowDown"
+    ) return;
     const target = ev.target;
     if (!(target instanceof Element)) return;
     const uid = getUidFromOrthographyInput(target);
@@ -242,7 +262,12 @@ export function startGlobal(
       scheduleSync(stateMap, flags);
     });
 
-    observer.ref.observe(target, { childList: true, subtree: true });
+    observer.ref.observe(target, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["class", "aria-hidden", "tabindex"]
+    });
   };
 
   startObserver();

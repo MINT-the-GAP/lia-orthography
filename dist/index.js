@@ -4,7 +4,7 @@
  */ /**
  * Shared types and pure utility functions used across all modules.
  */ function $faefaad95e5fcca0$export$1991ecd29cc92c6b(s) {
-    return String(s || "").toLocaleLowerCase().replace(/\s+/g, "");
+    return String(s || "").normalize("NFKC").replace(/[„“”‟«»‹›"]/g, '"').replace(/[‚‘’‛]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase().replace(/\s+/g, "");
 }
 function $faefaad95e5fcca0$export$fab1ce0fa1765516(raw) {
     const s = String(raw || "").trim().toLowerCase();
@@ -49,6 +49,24 @@ function $2f96dbadf81a4e19$export$b9324dd3ed41badd(installed) {
     const style = document.createElement("style");
     style.id = "orthography-export-style-v8b";
     style.textContent = `
+      .orthography-ui{
+        display:block;
+        margin:0;
+        padding:0;
+      }
+
+      .orthography-task{
+        display:block;
+        margin:0;
+        padding:0;
+      }
+
+      .orthography-check{
+        display:block;
+        margin:0;
+        padding:0;
+      }
+
       .orthography-wrap{
         display:grid;
         grid-template-columns:minmax(0, 1fr) auto;
@@ -57,15 +75,11 @@ function $2f96dbadf81a4e19$export$b9324dd3ed41badd(installed) {
         align-items:center;
       }
 
-      .orthography-wrap > p.lia-paragraph{
-        grid-column:1 / -1;
-        margin-bottom:0 !important;
-      }
-
       .orthography-wrap > .lia-quiz__input{
         grid-column:1;
         min-width:0;
         width:100%;
+        margin-bottom:0 !important;
       }
 
       .orthography-wrap > .ortho-reset-below{
@@ -106,17 +120,26 @@ function $2f96dbadf81a4e19$export$8ef5ec77fcb82f69(wrap) {
     return "";
 }
 function $2f96dbadf81a4e19$export$d668e62f6e0051f4(uid, cfg) {
+    const ui = document.getElementById(cfg?.idUi || "orthography-ui-" + uid);
+    const task = document.getElementById(cfg?.idTask || "orthography-task-" + uid);
+    const checkRoot = document.getElementById(cfg?.idCheck || "orthography-check-" + uid);
     const input = document.getElementById(cfg?.idInput || "orthography-input-" + uid) || document.querySelector('[data-id="lia-quiz-' + uid + '"]');
     const wrap = (input ? input.closest(".orthography-wrap") : null) || document.querySelector('.orthography-wrap[data-ortho-uid="' + uid + '"]') || document.getElementById(cfg?.idWrap || "orthography-wrap-" + uid);
     const reset = document.getElementById(cfg?.idReset || "orthography-reset-" + uid) || (wrap ? wrap.querySelector('[id^="orthography-reset-"]') : null);
     const start = document.getElementById(cfg?.idStart || "orthography-start-" + uid) || (wrap ? wrap.querySelector('[id^="orthography-start-"]') : null);
     const solution = document.getElementById(cfg?.idSolution || "orthography-solution-" + uid) || (wrap ? wrap.querySelector('[id^="orthography-solution-"]') : null);
+    if (ui) ui.dataset.orthoUid = uid;
+    if (task) task.dataset.orthoUid = uid;
+    if (checkRoot) checkRoot.dataset.orthoUid = uid;
     if (wrap) wrap.dataset.orthoUid = uid;
     if (input) input.dataset.orthoUid = uid;
     if (reset) reset.dataset.orthoUid = uid;
     if (start) start.dataset.orthoUid = uid;
     if (solution) solution.dataset.orthoUid = uid;
     return {
+        ui: ui,
+        task: task,
+        checkRoot: checkRoot,
         wrap: wrap,
         input: input,
         reset: reset,
@@ -126,6 +149,10 @@ function $2f96dbadf81a4e19$export$d668e62f6e0051f4(uid, cfg) {
 }
 function $2f96dbadf81a4e19$export$2927fd8de59b288a(uid, cfg) {
     const N = $2f96dbadf81a4e19$export$d668e62f6e0051f4(uid, cfg);
+    if (N.checkRoot) {
+        const quizzes = N.checkRoot.querySelectorAll(".lia-quiz");
+        if (quizzes.length) return quizzes[quizzes.length - 1];
+    }
     const wrap = N.wrap;
     if (!wrap) return null;
     if (wrap.id) {
@@ -239,6 +266,13 @@ function $f322f17f239b2b8e$export$d395e3b20a2c5108(uid, cfg, value) {
         N.input.setAttribute("value", value);
     } catch (e) {}
 }
+function $f322f17f239b2b8e$export$8506aef7b04f3a79(stateMap, uid) {
+    const S = (0, $a05669264f67e39b$export$b637efaa3fcc9599)(stateMap, uid);
+    const B = (0, $2f96dbadf81a4e19$export$20fbbf30e1f4ce8a)(uid, S.cfg);
+    const quiz = B?.quiz;
+    if (!quiz) return;
+    S.solved = quiz.classList.contains("solved") || quiz.classList.contains("resolved");
+}
 function $f322f17f239b2b8e$export$1ab7fa8d75d027ec(stateMap, uid) {
     const S = (0, $a05669264f67e39b$export$b637efaa3fcc9599)(stateMap, uid);
     const N = (0, $2f96dbadf81a4e19$export$d668e62f6e0051f4)(uid, S.cfg);
@@ -310,6 +344,7 @@ function $f322f17f239b2b8e$export$c78cb1561c965c1c(stateMap, uid) {
 function $f322f17f239b2b8e$export$10c851eaeed5d679(stateMap, uid) {
     const S = (0, $a05669264f67e39b$export$b637efaa3fcc9599)(stateMap, uid);
     (0, $a05669264f67e39b$export$7ff8ace17f87623e)(stateMap, uid);
+    $f322f17f239b2b8e$export$8506aef7b04f3a79(stateMap, uid);
     $f322f17f239b2b8e$export$eecd29dc1a4e8610(stateMap, uid);
     (0, $2f96dbadf81a4e19$export$20fbbf30e1f4ce8a)(uid, S.cfg);
     $f322f17f239b2b8e$export$c78cb1561c965c1c(stateMap, uid);
@@ -470,7 +505,16 @@ function $a541277566782c5f$export$2baef26cee7194d4(stateMap, flags, observer) {
         $a541277566782c5f$var$handleInput(stateMap, uid);
     }, true);
     document.addEventListener("keydown", (ev)=>{
-        if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight") return;
+        if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight" && ev.key !== "ArrowUp" && ev.key !== "ArrowDown") return;
+        const target = ev.target;
+        if (!(target instanceof Element)) return;
+        const uid = $a541277566782c5f$var$getUidFromOrthographyInput(target);
+        if (!uid) return;
+        ev.stopPropagation();
+        if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+    }, true);
+    document.addEventListener("keyup", (ev)=>{
+        if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight" && ev.key !== "ArrowUp" && ev.key !== "ArrowDown") return;
         const target = ev.target;
         if (!(target instanceof Element)) return;
         const uid = $a541277566782c5f$var$getUidFromOrthographyInput(target);
@@ -508,7 +552,13 @@ function $a541277566782c5f$export$2baef26cee7194d4(stateMap, flags, observer) {
         });
         observer.ref.observe(target, {
             childList: true,
-            subtree: true
+            subtree: true,
+            attributes: true,
+            attributeFilter: [
+                "class",
+                "aria-hidden",
+                "tabindex"
+            ]
         });
     };
     startObserver();
@@ -527,6 +577,8 @@ class $882b6d93070905b3$var$OrthographyModule {
         const S = (0, $a05669264f67e39b$export$b637efaa3fcc9599)(this.state, uid);
         S.cfg = cfg || null;
         S.gate = (0, $faefaad95e5fcca0$export$fab1ce0fa1765516)(cfg && cfg.gateRaw);
+        if (cfg && typeof cfg.startText === "string") S.start = cfg.startText;
+        if (cfg && typeof cfg.solutionText === "string") S.solution = cfg.solutionText;
         (0, $a05669264f67e39b$export$7ff8ace17f87623e)(this.state, uid);
         (0, $f322f17f239b2b8e$export$10c851eaeed5d679)(this.state, uid);
         (0, $f322f17f239b2b8e$export$702081a5d9f33ebc)(this.state, this.flags);

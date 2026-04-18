@@ -15,6 +15,21 @@ export function setInputValue(uid: string, cfg: ReturnType<typeof ensureState>["
   try { N.input.setAttribute("value", value); } catch(e){}
 }
 
+export function syncSolvedFromQuiz(
+  stateMap: Record<string, OrthographyState>,
+  uid: string
+): void {
+  const S = ensureState(stateMap, uid);
+  const B = ensureQuizBinding(uid, S.cfg);
+  const quiz = B?.quiz;
+
+  if (!quiz) return;
+
+  S.solved =
+    quiz.classList.contains("solved") ||
+    quiz.classList.contains("resolved");
+}
+
 export function restoreLiveValue(
   stateMap: Record<string, OrthographyState>,
   uid: string
@@ -114,6 +129,7 @@ export function applyResolveState(
 export function syncUid(stateMap: Record<string, OrthographyState>, uid: string): void {
   const S = ensureState(stateMap, uid);
   readStaticTexts(stateMap, uid);
+  syncSolvedFromQuiz(stateMap, uid);
   ensureResetPlacement(stateMap, uid);
   ensureQuizBinding(uid, S.cfg);
   applyResolveState(stateMap, uid);

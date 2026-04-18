@@ -5,11 +5,16 @@
 export interface OrthographyConfig {
   uid: string;
   gateRaw?: string | boolean | number;
+  idUi?: string;
+  idTask?: string;
+  idCheck?: string;
   idWrap?: string;
   idInput?: string;
   idReset?: string;
   idStart?: string;
   idSolution?: string;
+  startText?: string;
+  solutionText?: string;
 }
 
 export interface GateConfig {
@@ -31,6 +36,9 @@ export interface OrthographyState {
 }
 
 export interface OrthographyNodes {
+  ui: HTMLElement | null;
+  task: HTMLElement | null;
+  checkRoot: HTMLElement | null;
   wrap: HTMLElement | null;
   input: HTMLInputElement | null;
   reset: HTMLButtonElement | null;
@@ -46,7 +54,13 @@ export interface QuizBinding {
 }
 
 export function norm(s: string): string {
-  return String(s || "").toLocaleLowerCase().replace(/\s+/g, "");
+  return String(s || "")
+    .normalize("NFKC")
+    .replace(/[„“”‟«»‹›"]/g, '"')
+    .replace(/[‚‘’‛]/g, "'")
+    .replace(/\u00A0/g, " ")
+    .toLocaleLowerCase()
+    .replace(/\s+/g, "");
 }
 
 export function parseGate(raw: string | boolean | number | undefined): GateConfig {

@@ -11,6 +11,24 @@ export function ensureStyle(installed: { done: boolean }): void {
   const style = document.createElement("style");
   style.id = "orthography-export-style-v8b";
   style.textContent = `
+      .orthography-ui{
+        display:block;
+        margin:0;
+        padding:0;
+      }
+
+      .orthography-task{
+        display:block;
+        margin:0;
+        padding:0;
+      }
+
+      .orthography-check{
+        display:block;
+        margin:0;
+        padding:0;
+      }
+
       .orthography-wrap{
         display:grid;
         grid-template-columns:minmax(0, 1fr) auto;
@@ -19,15 +37,11 @@ export function ensureStyle(installed: { done: boolean }): void {
         align-items:center;
       }
 
-      .orthography-wrap > p.lia-paragraph{
-        grid-column:1 / -1;
-        margin-bottom:0 !important;
-      }
-
       .orthography-wrap > .lia-quiz__input{
         grid-column:1;
         min-width:0;
         width:100%;
+        margin-bottom:0 !important;
       }
 
       .orthography-wrap > .ortho-reset-below{
@@ -84,6 +98,15 @@ export function deriveUidFromWrap(wrap: HTMLElement): string {
 }
 
 export function getNodes(uid: string, cfg: OrthographyConfig | null): OrthographyNodes {
+  const ui =
+    document.getElementById((cfg?.idUi) || ("orthography-ui-" + uid));
+
+  const task =
+    document.getElementById((cfg?.idTask) || ("orthography-task-" + uid));
+
+  const checkRoot =
+    document.getElementById((cfg?.idCheck) || ("orthography-check-" + uid));
+
   const input =
     document.getElementById((cfg?.idInput) || ("orthography-input-" + uid)) as HTMLInputElement ||
     document.querySelector<HTMLInputElement>('[data-id="lia-quiz-' + uid + '"]');
@@ -105,17 +128,27 @@ export function getNodes(uid: string, cfg: OrthographyConfig | null): Orthograph
     document.getElementById((cfg?.idSolution) || ("orthography-solution-" + uid)) ||
     (wrap ? wrap.querySelector<HTMLElement>('[id^="orthography-solution-"]') : null);
 
+  if (ui) ui.dataset.orthoUid = uid;
+  if (task) task.dataset.orthoUid = uid;
+  if (checkRoot) checkRoot.dataset.orthoUid = uid;
   if (wrap) wrap.dataset.orthoUid = uid;
   if (input) input.dataset.orthoUid = uid;
   if (reset) reset.dataset.orthoUid = uid;
   if (start) start.dataset.orthoUid = uid;
   if (solution) solution.dataset.orthoUid = uid;
 
-  return { wrap, input, reset, start, solution };
+  return { ui, task, checkRoot, wrap, input, reset, start, solution };
 }
 
 export function findQuiz(uid: string, cfg: OrthographyConfig | null): HTMLElement | null {
   const N = getNodes(uid, cfg);
+  if (N.checkRoot) {
+    const quizzes = N.checkRoot.querySelectorAll<HTMLElement>(".lia-quiz");
+    if (quizzes.length) {
+      return quizzes[quizzes.length - 1];
+    }
+  }
+
   const wrap = N.wrap;
   if (!wrap) return null;
 
