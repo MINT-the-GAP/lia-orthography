@@ -118,6 +118,10 @@ Anna sitzt auf einem fliegenden Teppich.
 --- 
 
 
+
+
+
+
 **Example 2:** Listen to the words that fill the gaps and write them into the gaps.
 
 Anna ging in einen @diktat(Zoo). Dort konnte sie auf einem @diktat(Lama) reiten.
@@ -128,7 +132,7 @@ Anna ging in einen @diktat(Zoo). Dort konnte sie auf einem @diktat(Lama) reiten.
 
 **Example 3:** Place the comma in the correct position. (Resolve button is disabled.)
 
-@orthography(false,`Das ist der Tag an dem ich geblitzt wurde.`,`Das ist der Tag, an dem ich geblitzt wurde.`)
+@orthography(`<!--  data-solution-button="false"  -->`,`Das ist der Tag an dem ich geblitzt wurde.`,`Das ist der Tag, an dem ich geblitzt wurde.`)
 
 
 --- 
@@ -136,15 +140,14 @@ Anna ging in einen @diktat(Zoo). Dort konnte sie auf einem @diktat(Lama) reiten.
 
 **Example 4:** Add the punctuation to form correct direct speech. (Resolve unlocks after 2 attempts.)
 
-@orthography(2,`Der Apfel ist rot sagte Ben`,`"Der Apfel ist rot", sagte Ben.`)
-
+@orthography(`<!--  data-solution-button="2"  -->`,`Der Apfel ist rot sagte Ben`,`"Der Apfel ist rot", sagte Ben.`)
 
 --- 
 
 
 **Example 5:** Correct the spelling mistakes in the sentence.
 
-@orthography(4,`Es ist jetze um sechse.`,`Es ist jetzt um sechs.`)
+@orthography(`<!--  data-solution-button="4"  -->`,`Es ist jetze um sechse.`,`Es ist jetzt um sechs.`)
 
 ## Implementation
 
