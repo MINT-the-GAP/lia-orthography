@@ -79,7 +79,6 @@ function $2f96dbadf81a4e19$export$b9324dd3ed41badd(installed) {
         grid-column:1;
         min-width:0;
         width:100%;
-        margin-bottom:0 !important;
       }
 
       .orthography-wrap > .ortho-reset-below{
@@ -271,7 +270,7 @@ function $f322f17f239b2b8e$export$8506aef7b04f3a79(stateMap, uid) {
     const B = (0, $2f96dbadf81a4e19$export$20fbbf30e1f4ce8a)(uid, S.cfg);
     const quiz = B?.quiz;
     if (!quiz) return;
-    S.solved = quiz.classList.contains("solved") || quiz.classList.contains("resolved");
+    if (!S.solved) S.solved = quiz.classList.contains("solved") || quiz.classList.contains("resolved");
 }
 function $f322f17f239b2b8e$export$1ab7fa8d75d027ec(stateMap, uid) {
     const S = (0, $a05669264f67e39b$export$b637efaa3fcc9599)(stateMap, uid);

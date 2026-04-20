@@ -118,10 +118,6 @@ Anna sitzt auf einem fliegenden Teppich.
 --- 
 
 
-
-
-
-
 **Example 2:** Listen to the words that fill the gaps and write them into the gaps.
 
 Anna ging in einen @diktat(Zoo). Dort konnte sie auf einem @diktat(Lama) reiten.
@@ -132,7 +128,7 @@ Anna ging in einen @diktat(Zoo). Dort konnte sie auf einem @diktat(Lama) reiten.
 
 **Example 3:** Place the comma in the correct position. (Resolve button is disabled.)
 
-@orthography(`<!--  data-solution-button="false"  -->`,`Das ist der Tag an dem ich geblitzt wurde.`,`Das ist der Tag, an dem ich geblitzt wurde.`)
+@orthography(`false`,`Das ist der Tag an dem ich geblitzt wurde.`,`Das ist der Tag, an dem ich geblitzt wurde.`)
 
 
 --- 
@@ -140,14 +136,14 @@ Anna ging in einen @diktat(Zoo). Dort konnte sie auf einem @diktat(Lama) reiten.
 
 **Example 4:** Add the punctuation to form correct direct speech. (Resolve unlocks after 2 attempts.)
 
-@orthography(`<!--  data-solution-button="2"  -->`,`Der Apfel ist rot sagte Ben`,`"Der Apfel ist rot", sagte Ben.`)
+@orthography(`2`,`Der Apfel ist rot sagte Ben`,`"Der Apfel ist rot", sagte Ben.`)
 
 --- 
 
 
 **Example 5:** Correct the spelling mistakes in the sentence.
 
-@orthography(`<!--  data-solution-button="4"  -->`,`Es ist jetze um sechse.`,`Es ist jetzt um sechs.`)
+@orthography(`4`,`Es ist jetze um sechse.`,`Es ist jetzt um sechs.`)
 
 ## Implementation
 
@@ -167,6 +163,7 @@ script:   https://cdn.jsdelivr.net/gh/MINT-the-GAP/lia-orthography@0.0.1/dist/in
   <input id="orthography-input-@0" data-ortho-uid="@0" data-id="lia-quiz-@0" class="lia-input lia-quiz__input" style="margin-bottom:.5rem" value="@2">
 
   <button type="button" class="lia-btn lia-btn--outline ortho-reset-inline" id="orthography-reset-@0" data-ortho-uid="@0">Reset</button>
+
 </div>
 
 [[!]]

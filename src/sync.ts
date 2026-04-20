@@ -25,9 +25,11 @@ export function syncSolvedFromQuiz(
 
   if (!quiz) return;
 
-  S.solved =
-    quiz.classList.contains("solved") ||
-    quiz.classList.contains("resolved");
+  if (!S.solved) {
+    S.solved =
+      quiz.classList.contains("solved") ||
+      quiz.classList.contains("resolved");
+  }
 }
 
 export function restoreLiveValue(
