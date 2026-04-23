@@ -585,6 +585,15 @@ class $882b6d93070905b3$var$OrthographyModule {
     startGlobal() {
         (0, $a541277566782c5f$export$2baef26cee7194d4)(this.state, this.flags, this.observer);
     }
+    getAllStates() {
+        return this.state;
+    }
+    setState(uid, value) {
+        const S = (0, $a05669264f67e39b$export$b637efaa3fcc9599)(this.state, uid);
+        S.liveValue = value;
+        (0, $f322f17f239b2b8e$export$d395e3b20a2c5108)(uid, S.cfg, value);
+        (0, $f322f17f239b2b8e$export$10c851eaeed5d679)(this.state, uid);
+    }
     constructor(){
         this.state = {};
         this.observer = {

@@ -5,7 +5,7 @@
 
 import { OrthographyConfig, OrthographyState, parseGate, getRootWindow } from "./types";
 import { readStaticTexts, ensureState } from "./state";
-import { syncUid, scheduleSync } from "./sync";
+import { syncUid, scheduleSync, setInputValue } from "./sync";
 import { startGlobal } from "./events";
 
 class OrthographyModule {
@@ -41,6 +41,17 @@ class OrthographyModule {
 
   public startGlobal(): void {
     startGlobal(this.state, this.flags, this.observer);
+  }
+
+  public getAllStates(): Record<string, OrthographyState> {
+    return this.state;
+  }
+
+  public setState(uid: string, value: string): void {
+    const S = ensureState(this.state, uid);
+    S.liveValue = value;
+    setInputValue(uid, S.cfg, value);
+    syncUid(this.state, uid);
   }
 }
 
