@@ -7,6 +7,27 @@ import { getNodes, ensureStyle } from "./dom";
 import { ensureState } from "./state";
 import { syncUid, syncAll, scheduleSync, setInputValue } from "./sync";
 
+function disableBrowserWritingAids(root?: ParentNode | null): void {
+  const scope = root || document;
+  const elements = scope.querySelectorAll<HTMLElement>(
+    "input, textarea, [contenteditable='true'], [contenteditable=''], [contenteditable='plaintext-only']"
+  );
+
+  elements.forEach((element) => {
+    if ("spellcheck" in element) {
+      (element as HTMLElement).spellcheck = false;
+    }
+    element.setAttribute("spellcheck", "false");
+    element.setAttribute("autocorrect", "off");
+    element.setAttribute("autocapitalize", "none");
+    element.setAttribute("autocomplete", "off");
+    element.setAttribute("aria-autocomplete", "none");
+    element.setAttribute("data-gramm", "false");
+    element.setAttribute("data-gramm_editor", "false");
+    element.setAttribute("data-enable-grammarly", "false");
+  });
+}
+
 function getUidFromOrthographyInput(node: Element): string {
   const direct = node.closest<HTMLElement>("[data-ortho-uid]");
   if (direct && direct.dataset && direct.dataset.orthoUid) {
@@ -180,6 +201,7 @@ export function startGlobal(
   flags.started = true;
 
   ensureStyle(flags.styleInstalled);
+  disableBrowserWritingAids(document);
 
   document.addEventListener("input", (ev) => {
     const target = ev.target;
@@ -258,7 +280,21 @@ export function startGlobal(
     const target = document.body || document.documentElement;
     if (!target) return;
 
-    observer.ref = new MutationObserver(() => {
+    observer.ref = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType !== Node.ELEMENT_NODE) return;
+          const element = node as Element;
+          if (
+            element.matches &&
+            element.matches("input, textarea, [contenteditable='true'], [contenteditable=''], [contenteditable='plaintext-only']")
+          ) {
+            disableBrowserWritingAids(element.parentNode as ParentNode || document);
+          } else {
+            disableBrowserWritingAids(element);
+          }
+        });
+      });
       scheduleSync(stateMap, flags);
     });
 

@@ -127,6 +127,10 @@ export function getNodes(uid: string, cfg: OrthographyConfig | null): Orthograph
     document.getElementById((cfg?.idSolution) || ("orthography-solution-" + uid)) ||
     (wrap ? wrap.querySelector<HTMLElement>('[id^="orthography-solution-"]') : null);
 
+  const comment =
+    document.getElementById((cfg?.idComment) || ("orthography-comment-" + uid)) ||
+    (wrap ? wrap.querySelector<HTMLElement>('[id^="orthography-comment-"]') : null);
+
   if (ui) ui.dataset.orthoUid = uid;
   if (task) task.dataset.orthoUid = uid;
   if (checkRoot) checkRoot.dataset.orthoUid = uid;
@@ -135,8 +139,9 @@ export function getNodes(uid: string, cfg: OrthographyConfig | null): Orthograph
   if (reset) reset.dataset.orthoUid = uid;
   if (start) start.dataset.orthoUid = uid;
   if (solution) solution.dataset.orthoUid = uid;
+  if (comment) comment.dataset.orthoUid = uid;
 
-  return { ui, task, checkRoot, wrap, input, reset, start, solution };
+  return { ui, task, checkRoot, wrap, input, reset, start, solution, comment };
 }
 
 export function findQuiz(uid: string, cfg: OrthographyConfig | null): HTMLElement | null {

@@ -7,7 +7,13 @@
     return String(s || "").normalize("NFKC").replace(/[„“”‟«»‹›"]/g, '"').replace(/[‚‘’‛]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase().replace(/\s+/g, "");
 }
 function $faefaad95e5fcca0$export$fab1ce0fa1765516(raw) {
-    const s = String(raw || "").trim().toLowerCase();
+    const original = String(raw || "").trim();
+    let s = original.toLowerCase();
+    // Allow LiaScript comment syntax, e.g. <!-- data-solution-button="2" -->.
+    if (s.indexOf("data-solution-button") >= 0) {
+        const m = original.match(/data-solution-button\s*=\s*["']?([^"'\s>]+)["']?/i);
+        if (m && m[1]) s = String(m[1]).trim().toLowerCase();
+    }
     if (s === "false" || s === "0" || s === "off" || s === "no") return {
         mode: "off",
         n: 0
@@ -127,6 +133,7 @@ function $2f96dbadf81a4e19$export$d668e62f6e0051f4(uid, cfg) {
     const reset = document.getElementById(cfg?.idReset || "orthography-reset-" + uid) || (wrap ? wrap.querySelector('[id^="orthography-reset-"]') : null);
     const start = document.getElementById(cfg?.idStart || "orthography-start-" + uid) || (wrap ? wrap.querySelector('[id^="orthography-start-"]') : null);
     const solution = document.getElementById(cfg?.idSolution || "orthography-solution-" + uid) || (wrap ? wrap.querySelector('[id^="orthography-solution-"]') : null);
+    const comment = document.getElementById(cfg?.idComment || "orthography-comment-" + uid) || (wrap ? wrap.querySelector('[id^="orthography-comment-"]') : null);
     if (ui) ui.dataset.orthoUid = uid;
     if (task) task.dataset.orthoUid = uid;
     if (checkRoot) checkRoot.dataset.orthoUid = uid;
@@ -135,6 +142,7 @@ function $2f96dbadf81a4e19$export$d668e62f6e0051f4(uid, cfg) {
     if (reset) reset.dataset.orthoUid = uid;
     if (start) start.dataset.orthoUid = uid;
     if (solution) solution.dataset.orthoUid = uid;
+    if (comment) comment.dataset.orthoUid = uid;
     return {
         ui: ui,
         task: task,
@@ -143,7 +151,8 @@ function $2f96dbadf81a4e19$export$d668e62f6e0051f4(uid, cfg) {
         input: input,
         reset: reset,
         start: start,
-        solution: solution
+        solution: solution,
+        comment: comment
     };
 }
 function $2f96dbadf81a4e19$export$2927fd8de59b288a(uid, cfg) {
@@ -210,6 +219,7 @@ function $a05669264f67e39b$export$b637efaa3fcc9599(stateMap, uid) {
             mode: "on",
             n: 0
         },
+        comment: "",
         start: "",
         solution: "",
         liveValue: null,
@@ -228,6 +238,7 @@ function $a05669264f67e39b$export$7ff8ace17f87623e(stateMap, uid) {
         else if (N.input) S.start = N.input.getAttribute("value") || N.input.defaultValue || "";
     }
     if (N.solution) S.solution = N.solution.textContent || S.solution || "";
+    if (!S.comment && N.comment) S.comment = N.comment.textContent || "";
     if (S.liveValue === null) {
         if (N.input) S.liveValue = N.input.value;
         else S.liveValue = S.start;
@@ -244,9 +255,10 @@ function $a05669264f67e39b$export$d3ae10d3b2070029(stateMap) {
             S.cfg = {
                 uid: uid
             };
-            S.gate = (0, $faefaad95e5fcca0$export$fab1ce0fa1765516)(wrap.dataset.orthoGate);
+            S.comment = wrap.dataset.orthoComment || S.comment;
         }
         $a05669264f67e39b$export$7ff8ace17f87623e(stateMap, uid);
+        if (!S.cfg?.gateRaw) S.gate = (0, $faefaad95e5fcca0$export$fab1ce0fa1765516)(wrap.dataset.orthoGate || S.comment);
     });
 }
 
@@ -385,6 +397,21 @@ function $f322f17f239b2b8e$export$702081a5d9f33ebc(stateMap, flags) {
 
 
 
+function $a541277566782c5f$var$disableBrowserWritingAids(root) {
+    const scope = root || document;
+    const elements = scope.querySelectorAll("input, textarea, [contenteditable='true'], [contenteditable=''], [contenteditable='plaintext-only']");
+    elements.forEach((element)=>{
+        if ("spellcheck" in element) element.spellcheck = false;
+        element.setAttribute("spellcheck", "false");
+        element.setAttribute("autocorrect", "off");
+        element.setAttribute("autocapitalize", "none");
+        element.setAttribute("autocomplete", "off");
+        element.setAttribute("aria-autocomplete", "none");
+        element.setAttribute("data-gramm", "false");
+        element.setAttribute("data-gramm_editor", "false");
+        element.setAttribute("data-enable-grammarly", "false");
+    });
+}
 function $a541277566782c5f$var$getUidFromOrthographyInput(node) {
     const direct = node.closest("[data-ortho-uid]");
     if (direct && direct.dataset && direct.dataset.orthoUid) return String(direct.dataset.orthoUid);
@@ -489,6 +516,7 @@ function $a541277566782c5f$export$2baef26cee7194d4(stateMap, flags, observer) {
     if (flags.started) return;
     flags.started = true;
     (0, $2f96dbadf81a4e19$export$b9324dd3ed41badd)(flags.styleInstalled);
+    $a541277566782c5f$var$disableBrowserWritingAids(document);
     document.addEventListener("input", (ev)=>{
         const target = ev.target;
         if (!(target instanceof Element)) return;
@@ -546,7 +574,15 @@ function $a541277566782c5f$export$2baef26cee7194d4(stateMap, flags, observer) {
         if (observer.ref) return;
         const target = document.body || document.documentElement;
         if (!target) return;
-        observer.ref = new MutationObserver(()=>{
+        observer.ref = new MutationObserver((mutations)=>{
+            mutations.forEach((mutation)=>{
+                mutation.addedNodes.forEach((node)=>{
+                    if (node.nodeType !== Node.ELEMENT_NODE) return;
+                    const element = node;
+                    if (element.matches && element.matches("input, textarea, [contenteditable='true'], [contenteditable=''], [contenteditable='plaintext-only']")) $a541277566782c5f$var$disableBrowserWritingAids(element.parentNode || document);
+                    else $a541277566782c5f$var$disableBrowserWritingAids(element);
+                });
+            });
             (0, $f322f17f239b2b8e$export$702081a5d9f33ebc)(stateMap, flags);
         });
         observer.ref.observe(target, {
@@ -575,7 +611,8 @@ class $882b6d93070905b3$var$OrthographyModule {
         if (!uid) return;
         const S = (0, $a05669264f67e39b$export$b637efaa3fcc9599)(this.state, uid);
         S.cfg = cfg || null;
-        S.gate = (0, $faefaad95e5fcca0$export$fab1ce0fa1765516)(cfg && cfg.gateRaw);
+        S.comment = cfg && cfg.commentRaw ? String(cfg.commentRaw) : S.comment;
+        S.gate = (0, $faefaad95e5fcca0$export$fab1ce0fa1765516)(cfg && cfg.gateRaw || S.comment);
         if (cfg && typeof cfg.startText === "string") S.start = cfg.startText;
         if (cfg && typeof cfg.solutionText === "string") S.solution = cfg.solutionText;
         (0, $a05669264f67e39b$export$7ff8ace17f87623e)(this.state, uid);

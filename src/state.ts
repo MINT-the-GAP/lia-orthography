@@ -14,6 +14,7 @@ export function ensureState(
       uid,
       cfg: null,
       gate: { mode: "on", n: 0 },
+      comment: "",
       start: "",
       solution: "",
       liveValue: null,
@@ -45,6 +46,10 @@ export function readStaticTexts(
     S.solution = N.solution.textContent || S.solution || "";
   }
 
+  if (!S.comment && N.comment) {
+    S.comment = N.comment.textContent || "";
+  }
+
   if (S.liveValue === null) {
     if (N.input) S.liveValue = N.input.value;
     else S.liveValue = S.start;
@@ -60,8 +65,11 @@ export function discoverAll(stateMap: Record<string, OrthographyState>): void {
     wrap.dataset.orthoUid = uid;
     if (!S.cfg) {
       S.cfg = { uid };
-      S.gate = parseGate(wrap.dataset.orthoGate);
+      S.comment = wrap.dataset.orthoComment || S.comment;
     }
     readStaticTexts(stateMap, uid);
+    if (!S.cfg?.gateRaw) {
+      S.gate = parseGate(wrap.dataset.orthoGate || S.comment);
+    }
   });
 }

@@ -11,26 +11,35 @@ script:   ./dist/index.js
 @orthography: @orthography_(@uid,`@0`,`@1`,`@2`)
 
 @orthography_
-<div class="orthography-wrap" id="orthography-wrap-@0" data-ortho-uid="@0" data-ortho-gate="@1">
-  <span id="orthography-start-@0" style="display:none">@2</span>
-  <span id="orthography-solution-@0" style="display:none">@3</span>
+<div id="orthography-ui-@0" class="orthography-ui" data-ortho-uid="@0">
+  <div id="orthography-task-@0" class="orthography-task">
+    <div class="orthography-wrap" id="orthography-wrap-@0" data-ortho-uid="@0">
+      <span id="orthography-start-@0" style="display:none">@2</span>
+      <span id="orthography-solution-@0" style="display:none">@3</span>
 
-  <input id="orthography-input-@0" data-ortho-uid="@0" data-id="lia-quiz-@0" class="lia-input lia-quiz__input" style="margin-bottom:.5rem" value="@2">
+      <input id="orthography-input-@0" data-ortho-uid="@0" data-id="lia-quiz-@0" class="lia-input lia-quiz__input" style="margin-bottom:.5rem" value="@2">
 
-  <button type="button" class="lia-btn lia-btn--outline ortho-reset-inline" id="orthography-reset-@0" data-ortho-uid="@0">Reset</button>
+      <button type="button" class="lia-btn lia-btn--outline ortho-reset-inline" id="orthography-reset-@0" data-ortho-uid="@0">Reset</button>
+    </div>
+  </div>
+
+  <div id="orthography-check-@0" class="orthography-check" data-ortho-uid="@0">
+    @1
+    [[!]]
+    <script>
+    (function(){
+      const el  = document.getElementById("orthography-input-@0");
+      const sol = document.getElementById("orthography-solution-@0");
+      if(!el || !sol) return false;
+
+      const norm = s => String(s || "").toLocaleLowerCase().replace(/\s+/g, "");
+      return norm(el.value) === norm(sol.textContent);
+    })()
+    </script>
+  </div>
 </div>
 
-[[!]]
-<script>
-(function(){
-  const el  = document.getElementById("orthography-input-@0");
-  const sol = document.getElementById("orthography-solution-@0");
-  if(!el || !sol) return false;
-
-  const norm = s => String(s || "").toLocaleLowerCase().replace(/\s+/g, "");
-  return norm(el.value) === norm(sol.textContent);
-})()
-</script>
+<script type="text/plain" id="orthography-comment-@0">@1</script>
 
 @end
 
@@ -72,17 +81,17 @@ https://github.com/MINT-the-GAP/lia-orthography
 Creates an orthography exercise where students correct spelling or punctuation. The first parameter controls when the resolve button appears.
 
 **Parameters:**
-- `@0` — Gate: `false`/`off` (no resolve button), `true`/`on` (always available), or a number of attempts required
+- `@0` — LiaScript comment options for the quiz block, e.g. `<!-- data-solution-button="2" -->`
 - `@1` — Initial text (may contain errors)
 - `@2` — Correct solution
 
 ``` markdown
-@orthography('2',`The apel is red`,`The apple is red.`)
+@orthography(`<!-- data-solution-button="2" -->`,`The apel is red`,`The apple is red.`)
 ```
 
 ---
 
-@orthography(2,`The apel is red`,`The apple is red.`)
+@orthography(`<!-- data-solution-button="2" -->`,`The apel is red`,`The apple is red.`)
 
 ## `@diktat`
 
@@ -128,7 +137,7 @@ Anna ging in einen @diktat(Zoo). Dort konnte sie auf einem @diktat(Lama) reiten.
 
 **Example 3:** Place the comma in the correct position. (Resolve button is disabled.)
 
-@orthography(`false`,`Das ist der Tag an dem ich geblitzt wurde.`,`Das ist der Tag, an dem ich geblitzt wurde.`)
+@orthography(`<!-- data-solution-button="false" -->`,`Das ist der Tag an dem ich geblitzt wurde.`,`Das ist der Tag, an dem ich geblitzt wurde.`)
 
 
 --- 
@@ -136,14 +145,14 @@ Anna ging in einen @diktat(Zoo). Dort konnte sie auf einem @diktat(Lama) reiten.
 
 **Example 4:** Add the punctuation to form correct direct speech. (Resolve unlocks after 2 attempts.)
 
-@orthography(`2`,`Der Apfel ist rot sagte Ben`,`"Der Apfel ist rot", sagte Ben.`)
+@orthography(`<!-- data-solution-button="2" -->`,`Der Apfel ist rot sagte Ben`,`"Der Apfel ist rot", sagte Ben.`)
 
 --- 
 
 
 **Example 5:** Correct the spelling mistakes in the sentence.
 
-@orthography(`4`,`Es ist jetze um sechse.`,`Es ist jetzt um sechs.`)
+@orthography(`<!-- data-solution-button="4" -->`,`Es ist jetze um sechse.`,`Es ist jetzt um sechs.`)
 
 ## Implementation
 
@@ -156,27 +165,35 @@ script:   https://cdn.jsdelivr.net/gh/MINT-the-GAP/lia-orthography@0.0.1/dist/in
 @orthography: @orthography_(@uid,`@0`,`@1`,`@2`)
 
 @orthography_
-<div class="orthography-wrap" id="orthography-wrap-@0" data-ortho-uid="@0" data-ortho-gate="@1">
-  <span id="orthography-start-@0" style="display:none">@2</span>
-  <span id="orthography-solution-@0" style="display:none">@3</span>
+<div id="orthography-ui-@0" class="orthography-ui" data-ortho-uid="@0">
+  <div id="orthography-task-@0" class="orthography-task">
+    <div class="orthography-wrap" id="orthography-wrap-@0" data-ortho-uid="@0">
+      <span id="orthography-start-@0" style="display:none">@2</span>
+      <span id="orthography-solution-@0" style="display:none">@3</span>
 
-  <input id="orthography-input-@0" data-ortho-uid="@0" data-id="lia-quiz-@0" class="lia-input lia-quiz__input" style="margin-bottom:.5rem" value="@2">
+      <input id="orthography-input-@0" data-ortho-uid="@0" data-id="lia-quiz-@0" class="lia-input lia-quiz__input" style="margin-bottom:.5rem" value="@2">
 
-  <button type="button" class="lia-btn lia-btn--outline ortho-reset-inline" id="orthography-reset-@0" data-ortho-uid="@0">Reset</button>
+      <button type="button" class="lia-btn lia-btn--outline ortho-reset-inline" id="orthography-reset-@0" data-ortho-uid="@0">Reset</button>
+    </div>
+  </div>
 
+  <div id="orthography-check-@0" class="orthography-check" data-ortho-uid="@0">
+    @1
+    [[!]]
+    <script>
+    (function(){
+      const el  = document.getElementById("orthography-input-@0");
+      const sol = document.getElementById("orthography-solution-@0");
+      if(!el || !sol) return false;
+
+      const norm = s => String(s || "").toLocaleLowerCase().replace(/\s+/g, "");
+      return norm(el.value) === norm(sol.textContent);
+    })()
+    </script>
+  </div>
 </div>
 
-[[!]]
-<script>
-(function(){
-  const el  = document.getElementById("orthography-input-@0");
-  const sol = document.getElementById("orthography-solution-@0");
-  if(!el || !sol) return false;
-
-  const norm = s => String(s || "").toLocaleLowerCase().replace(/\s+/g, "");
-  return norm(el.value) === norm(sol.textContent);
-})()
-</script>
+<script type="text/plain" id="orthography-comment-@0">@1</script>
 
 @end
 

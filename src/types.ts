@@ -5,6 +5,7 @@
 export interface OrthographyConfig {
   uid: string;
   gateRaw?: string | boolean | number;
+  commentRaw?: string;
   idUi?: string;
   idTask?: string;
   idCheck?: string;
@@ -13,6 +14,7 @@ export interface OrthographyConfig {
   idReset?: string;
   idStart?: string;
   idSolution?: string;
+  idComment?: string;
   startText?: string;
   solutionText?: string;
 }
@@ -26,6 +28,7 @@ export interface OrthographyState {
   uid: string;
   cfg: OrthographyConfig | null;
   gate: GateConfig;
+  comment: string;
   start: string;
   solution: string;
   liveValue: string | null;
@@ -44,6 +47,7 @@ export interface OrthographyNodes {
   reset: HTMLButtonElement | null;
   start: HTMLElement | null;
   solution: HTMLElement | null;
+  comment: HTMLElement | null;
 }
 
 export interface QuizBinding {
@@ -64,7 +68,17 @@ export function norm(s: string): string {
 }
 
 export function parseGate(raw: string | boolean | number | undefined): GateConfig {
-  const s = String(raw || "").trim().toLowerCase();
+  const original = String(raw || "").trim();
+  let s = original.toLowerCase();
+
+  // Allow LiaScript comment syntax, e.g. <!-- data-solution-button="2" -->.
+  if (s.indexOf("data-solution-button") >= 0) {
+    const m = original.match(/data-solution-button\s*=\s*["']?([^"'\s>]+)["']?/i);
+    if (m && m[1]) {
+      s = String(m[1]).trim().toLowerCase();
+    }
+  }
+
   if (s === "false" || s === "0" || s === "off" || s === "no") {
     return { mode: "off", n: 0 };
   }
