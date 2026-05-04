@@ -9,22 +9,24 @@ import { syncUid, syncAll, scheduleSync, setInputValue } from "./sync";
 
 function disableBrowserWritingAids(root?: ParentNode | null): void {
   const scope = root || document;
-  const elements = scope.querySelectorAll<HTMLElement>(
-    "input, textarea, [contenteditable='true'], [contenteditable=''], [contenteditable='plaintext-only']"
-  );
+  const wraps = scope.querySelectorAll<HTMLElement>(".orthography-wrap");
 
-  elements.forEach((element) => {
-    if ("spellcheck" in element) {
-      (element as HTMLElement).spellcheck = false;
-    }
-    element.setAttribute("spellcheck", "false");
-    element.setAttribute("autocorrect", "off");
-    element.setAttribute("autocapitalize", "none");
-    element.setAttribute("autocomplete", "off");
-    element.setAttribute("aria-autocomplete", "none");
-    element.setAttribute("data-gramm", "false");
-    element.setAttribute("data-gramm_editor", "false");
-    element.setAttribute("data-enable-grammarly", "false");
+  wraps.forEach((wrap) => {
+    const elements = wrap.querySelectorAll<HTMLElement>(
+      "input, textarea, [contenteditable='true'], [contenteditable=''], [contenteditable='plaintext-only']"
+    );
+    elements.forEach((element) => {
+      if ("spellcheck" in element) {
+        (element as HTMLElement).spellcheck = false;
+      }
+      element.setAttribute("spellcheck", "false");
+      element.setAttribute("autocorrect", "off");
+      element.setAttribute("autocapitalize", "none");
+      element.setAttribute("autocomplete", "off");
+      element.setAttribute("data-gramm", "false");
+      element.setAttribute("data-gramm_editor", "false");
+      element.setAttribute("data-enable-grammarly", "false");
+    });
   });
 }
 
@@ -289,7 +291,7 @@ export function startGlobal(
             element.matches &&
             element.matches("input, textarea, [contenteditable='true'], [contenteditable=''], [contenteditable='plaintext-only']")
           ) {
-            disableBrowserWritingAids(element.parentNode as ParentNode || document);
+            if (element.parentNode) disableBrowserWritingAids(element.parentNode as ParentNode);
           } else {
             disableBrowserWritingAids(element);
           }

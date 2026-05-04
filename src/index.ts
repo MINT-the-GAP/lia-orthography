@@ -25,7 +25,7 @@ class OrthographyModule {
     const S = ensureState(this.state, uid);
     S.cfg = cfg || null;
     S.comment = (cfg && cfg.commentRaw) ? String(cfg.commentRaw) : S.comment;
-    S.gate = parseGate((cfg && cfg.gateRaw) || S.comment);
+    S.gate = parseGate(cfg?.gateRaw !== undefined ? cfg.gateRaw : S.comment);
 
     if (cfg && typeof cfg.startText === "string") {
       S.start = cfg.startText;

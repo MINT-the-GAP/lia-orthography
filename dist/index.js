@@ -399,17 +399,19 @@ function $f322f17f239b2b8e$export$702081a5d9f33ebc(stateMap, flags) {
 
 function $a541277566782c5f$var$disableBrowserWritingAids(root) {
     const scope = root || document;
-    const elements = scope.querySelectorAll("input, textarea, [contenteditable='true'], [contenteditable=''], [contenteditable='plaintext-only']");
-    elements.forEach((element)=>{
-        if ("spellcheck" in element) element.spellcheck = false;
-        element.setAttribute("spellcheck", "false");
-        element.setAttribute("autocorrect", "off");
-        element.setAttribute("autocapitalize", "none");
-        element.setAttribute("autocomplete", "off");
-        element.setAttribute("aria-autocomplete", "none");
-        element.setAttribute("data-gramm", "false");
-        element.setAttribute("data-gramm_editor", "false");
-        element.setAttribute("data-enable-grammarly", "false");
+    const wraps = scope.querySelectorAll(".orthography-wrap");
+    wraps.forEach((wrap)=>{
+        const elements = wrap.querySelectorAll("input, textarea, [contenteditable='true'], [contenteditable=''], [contenteditable='plaintext-only']");
+        elements.forEach((element)=>{
+            if ("spellcheck" in element) element.spellcheck = false;
+            element.setAttribute("spellcheck", "false");
+            element.setAttribute("autocorrect", "off");
+            element.setAttribute("autocapitalize", "none");
+            element.setAttribute("autocomplete", "off");
+            element.setAttribute("data-gramm", "false");
+            element.setAttribute("data-gramm_editor", "false");
+            element.setAttribute("data-enable-grammarly", "false");
+        });
     });
 }
 function $a541277566782c5f$var$getUidFromOrthographyInput(node) {
@@ -579,8 +581,9 @@ function $a541277566782c5f$export$2baef26cee7194d4(stateMap, flags, observer) {
                 mutation.addedNodes.forEach((node)=>{
                     if (node.nodeType !== Node.ELEMENT_NODE) return;
                     const element = node;
-                    if (element.matches && element.matches("input, textarea, [contenteditable='true'], [contenteditable=''], [contenteditable='plaintext-only']")) $a541277566782c5f$var$disableBrowserWritingAids(element.parentNode || document);
-                    else $a541277566782c5f$var$disableBrowserWritingAids(element);
+                    if (element.matches && element.matches("input, textarea, [contenteditable='true'], [contenteditable=''], [contenteditable='plaintext-only']")) {
+                        if (element.parentNode) $a541277566782c5f$var$disableBrowserWritingAids(element.parentNode);
+                    } else $a541277566782c5f$var$disableBrowserWritingAids(element);
                 });
             });
             (0, $f322f17f239b2b8e$export$702081a5d9f33ebc)(stateMap, flags);
@@ -612,7 +615,7 @@ class $882b6d93070905b3$var$OrthographyModule {
         const S = (0, $a05669264f67e39b$export$b637efaa3fcc9599)(this.state, uid);
         S.cfg = cfg || null;
         S.comment = cfg && cfg.commentRaw ? String(cfg.commentRaw) : S.comment;
-        S.gate = (0, $faefaad95e5fcca0$export$fab1ce0fa1765516)(cfg && cfg.gateRaw || S.comment);
+        S.gate = (0, $faefaad95e5fcca0$export$fab1ce0fa1765516)(cfg?.gateRaw !== undefined ? cfg.gateRaw : S.comment);
         if (cfg && typeof cfg.startText === "string") S.start = cfg.startText;
         if (cfg && typeof cfg.solutionText === "string") S.solution = cfg.solutionText;
         (0, $a05669264f67e39b$export$7ff8ace17f87623e)(this.state, uid);
