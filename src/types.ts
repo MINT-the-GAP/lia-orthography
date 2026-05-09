@@ -43,7 +43,7 @@ export interface OrthographyNodes {
   task: HTMLElement | null;
   checkRoot: HTMLElement | null;
   wrap: HTMLElement | null;
-  input: HTMLInputElement | null;
+  input: HTMLInputElement | HTMLTextAreaElement | null;
   reset: HTMLButtonElement | null;
   start: HTMLElement | null;
   solution: HTMLElement | null;

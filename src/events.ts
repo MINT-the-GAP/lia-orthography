@@ -9,24 +9,22 @@ import { syncUid, syncAll, scheduleSync, setInputValue } from "./sync";
 
 function disableBrowserWritingAids(root?: ParentNode | null): void {
   const scope = root || document;
-  const wraps = scope.querySelectorAll<HTMLElement>(".orthography-wrap");
+  const elements = scope.querySelectorAll<HTMLElement>(
+    "input, textarea, [contenteditable='true'], [contenteditable=''], [contenteditable='plaintext-only']"
+  );
 
-  wraps.forEach((wrap) => {
-    const elements = wrap.querySelectorAll<HTMLElement>(
-      "input, textarea, [contenteditable='true'], [contenteditable=''], [contenteditable='plaintext-only']"
-    );
-    elements.forEach((element) => {
-      if ("spellcheck" in element) {
-        (element as HTMLElement).spellcheck = false;
-      }
-      element.setAttribute("spellcheck", "false");
-      element.setAttribute("autocorrect", "off");
-      element.setAttribute("autocapitalize", "none");
-      element.setAttribute("autocomplete", "off");
-      element.setAttribute("data-gramm", "false");
-      element.setAttribute("data-gramm_editor", "false");
-      element.setAttribute("data-enable-grammarly", "false");
-    });
+  elements.forEach((element) => {
+    if ("spellcheck" in element) {
+      (element as HTMLElement).spellcheck = false;
+    }
+    element.setAttribute("spellcheck", "false");
+    element.setAttribute("autocorrect", "off");
+    element.setAttribute("autocapitalize", "none");
+    element.setAttribute("autocomplete", "off");
+    element.setAttribute("aria-autocomplete", "none");
+    element.setAttribute("data-gramm", "false");
+    element.setAttribute("data-gramm_editor", "false");
+    element.setAttribute("data-enable-grammarly", "false");
   });
 }
 
@@ -36,10 +34,12 @@ function getUidFromOrthographyInput(node: Element): string {
     return String(direct.dataset.orthoUid);
   }
 
-  const input = node.closest<HTMLElement>('[id^="orthography-input-"], [data-id^="lia-quiz-"]');
+  const input = node.closest<HTMLElement>('[id^="orthography-input-"], [id^="orthographytext-input-"], [data-id^="lia-quiz-"]');
   if (input) {
     if (input.id) {
-      const byId = parseUidFromString(input.id, "orthography-input-");
+      const byId =
+        parseUidFromString(input.id, "orthography-input-") ||
+        parseUidFromString(input.id, "orthographytext-input-");
       if (byId) return byId;
     }
     const dataId = input.getAttribute("data-id");
@@ -59,7 +59,9 @@ function getUidFromReset(node: Element): string {
   }
 
   if (node.id) {
-    const uid = parseUidFromString(node.id, "orthography-reset-");
+    const uid =
+      parseUidFromString(node.id, "orthography-reset-") ||
+      parseUidFromString(node.id, "orthographytext-reset-");
     if (uid) return uid;
   }
 
@@ -255,7 +257,7 @@ export function startGlobal(
     const target = ev.target;
     if (!(target instanceof Element)) return;
 
-    const reset = target.closest(".ortho-reset-below, [id^='orthography-reset-']");
+    const reset = target.closest(".ortho-reset-below, [id^='orthography-reset-'], [id^='orthographytext-reset-']");
     if (reset) {
       const uid = getUidFromReset(reset);
       if (uid) handleReset(stateMap, uid, ev);

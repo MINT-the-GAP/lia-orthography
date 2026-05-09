@@ -72,9 +72,14 @@ export function deriveUidFromWrap(wrap: HTMLElement): string {
     return String(wrap.dataset.orthoUid);
   }
 
-  const byInputId = wrap.querySelector<HTMLElement>('[id^="orthography-input-"]');
+  const byInputId =
+    wrap.querySelector<HTMLElement>('[id^="orthography-input-"]') ||
+    wrap.querySelector<HTMLElement>('[id^="orthographytext-input-"]');
   if (byInputId && byInputId.id) {
-    return parseUidFromString(byInputId.id, "orthography-input-");
+    return (
+      parseUidFromString(byInputId.id, "orthography-input-") ||
+      parseUidFromString(byInputId.id, "orthographytext-input-")
+    );
   }
 
   const byDataId = wrap.querySelector<HTMLElement>('[data-id^="lia-quiz-"]');
@@ -83,14 +88,24 @@ export function deriveUidFromWrap(wrap: HTMLElement): string {
     if (uid) return uid;
   }
 
-  const bySolution = wrap.querySelector<HTMLElement>('[id^="orthography-solution-"]');
+  const bySolution =
+    wrap.querySelector<HTMLElement>('[id^="orthography-solution-"]') ||
+    wrap.querySelector<HTMLElement>('[id^="orthographytext-solution-"]');
   if (bySolution && bySolution.id) {
-    return parseUidFromString(bySolution.id, "orthography-solution-");
+    return (
+      parseUidFromString(bySolution.id, "orthography-solution-") ||
+      parseUidFromString(bySolution.id, "orthographytext-solution-")
+    );
   }
 
-  const byReset = wrap.querySelector<HTMLElement>('[id^="orthography-reset-"]');
+  const byReset =
+    wrap.querySelector<HTMLElement>('[id^="orthography-reset-"]') ||
+    wrap.querySelector<HTMLElement>('[id^="orthographytext-reset-"]');
   if (byReset && byReset.id) {
-    return parseUidFromString(byReset.id, "orthography-reset-");
+    return (
+      parseUidFromString(byReset.id, "orthography-reset-") ||
+      parseUidFromString(byReset.id, "orthographytext-reset-")
+    );
   }
 
   return "";
@@ -98,38 +113,47 @@ export function deriveUidFromWrap(wrap: HTMLElement): string {
 
 export function getNodes(uid: string, cfg: OrthographyConfig | null): OrthographyNodes {
   const ui =
-    document.getElementById((cfg?.idUi) || ("orthography-ui-" + uid));
+    document.getElementById((cfg?.idUi) || ("orthography-ui-" + uid)) ||
+    document.getElementById("orthographytext-ui-" + uid);
 
   const task =
-    document.getElementById((cfg?.idTask) || ("orthography-task-" + uid));
+    document.getElementById((cfg?.idTask) || ("orthography-task-" + uid)) ||
+    document.getElementById("orthographytext-task-" + uid);
 
   const checkRoot =
-    document.getElementById((cfg?.idCheck) || ("orthography-check-" + uid));
+    document.getElementById((cfg?.idCheck) || ("orthography-check-" + uid)) ||
+    document.getElementById("orthographytext-check-" + uid);
 
   const input =
-    document.getElementById((cfg?.idInput) || ("orthography-input-" + uid)) as HTMLInputElement ||
-    document.querySelector<HTMLInputElement>('[data-id="lia-quiz-' + uid + '"]');
+    (document.getElementById((cfg?.idInput) || ("orthography-input-" + uid)) as HTMLInputElement | HTMLTextAreaElement | null) ||
+    (document.getElementById("orthographytext-input-" + uid) as HTMLInputElement | HTMLTextAreaElement | null) ||
+    document.querySelector<HTMLInputElement | HTMLTextAreaElement>('[data-id="lia-quiz-' + uid + '"]');
 
   const wrap =
     (input ? input.closest<HTMLElement>(".orthography-wrap") : null) ||
     document.querySelector<HTMLElement>('.orthography-wrap[data-ortho-uid="' + uid + '"]') ||
-    document.getElementById((cfg?.idWrap) || ("orthography-wrap-" + uid));
+    document.getElementById((cfg?.idWrap) || ("orthography-wrap-" + uid)) ||
+    document.getElementById("orthographytext-wrap-" + uid);
 
   const reset =
     document.getElementById((cfg?.idReset) || ("orthography-reset-" + uid)) as HTMLButtonElement ||
-    (wrap ? wrap.querySelector<HTMLButtonElement>('[id^="orthography-reset-"]') : null);
+    document.getElementById("orthographytext-reset-" + uid) as HTMLButtonElement ||
+    (wrap ? wrap.querySelector<HTMLButtonElement>('[id^="orthography-reset-"], [id^="orthographytext-reset-"]') : null);
 
   const start =
     document.getElementById((cfg?.idStart) || ("orthography-start-" + uid)) ||
-    (wrap ? wrap.querySelector<HTMLElement>('[id^="orthography-start-"]') : null);
+    document.getElementById("orthographytext-start-" + uid) ||
+    (wrap ? wrap.querySelector<HTMLElement>('[id^="orthography-start-"], [id^="orthographytext-start-"]') : null);
 
   const solution =
     document.getElementById((cfg?.idSolution) || ("orthography-solution-" + uid)) ||
-    (wrap ? wrap.querySelector<HTMLElement>('[id^="orthography-solution-"]') : null);
+    document.getElementById("orthographytext-solution-" + uid) ||
+    (wrap ? wrap.querySelector<HTMLElement>('[id^="orthography-solution-"], [id^="orthographytext-solution-"]') : null);
 
   const comment =
     document.getElementById((cfg?.idComment) || ("orthography-comment-" + uid)) ||
-    (wrap ? wrap.querySelector<HTMLElement>('[id^="orthography-comment-"]') : null);
+    document.getElementById("orthographytext-comment-" + uid) ||
+    (wrap ? wrap.querySelector<HTMLElement>('[id^="orthography-comment-"], [id^="orthographytext-comment-"]') : null);
 
   if (ui) ui.dataset.orthoUid = uid;
   if (task) task.dataset.orthoUid = uid;

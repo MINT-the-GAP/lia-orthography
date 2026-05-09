@@ -1,5 +1,5 @@
 <!--
-author:   MINT-the-GAP
+author:   MINT-the-GAP, Martin Lommatzsch, Jihad
 version:  0.0.1
 language: en
 edit: true
@@ -40,6 +40,41 @@ script:   ./dist/index.js
 </div>
 
 <script type="text/plain" id="orthography-comment-@0">@1</script>
+
+@end
+
+@orthographytext: @orthographytext_(@uid,`@0`,`@1`,`@2`)
+
+@orthographytext_
+<div id="orthographytext-ui-@0" class="orthography-ui" data-ortho-uid="@0">
+  <div id="orthographytext-task-@0" class="orthography-task">
+    <div class="orthography-wrap" id="orthographytext-wrap-@0" data-ortho-uid="@0">
+      <span id="orthographytext-start-@0" style="display:none">@2</span>
+      <span id="orthographytext-solution-@0" style="display:none">@3</span>
+
+      <textarea id="orthographytext-input-@0" data-ortho-uid="@0" data-id="lia-quiz-@0" class="lia-input lia-quiz__input" style="margin-bottom:.5rem; resize:vertical" rows="4">@2</textarea>
+
+      <button type="button" class="lia-btn lia-btn--outline ortho-reset-inline" id="orthographytext-reset-@0" data-ortho-uid="@0">Reset</button>
+    </div>
+  </div>
+
+  <div id="orthographytext-check-@0" class="orthography-check" data-ortho-uid="@0">
+    @1
+    [[!]]
+    <script>
+    (function(){
+      const el  = document.getElementById("orthographytext-input-@0");
+      const sol = document.getElementById("orthographytext-solution-@0");
+      if(!el || !sol) return false;
+
+      const norm = s => String(s || "").toLocaleLowerCase().replace(/\s+/g, "");
+      return norm(el.value) === norm(sol.textContent);
+    })()
+    </script>
+  </div>
+</div>
+
+<script type="text/plain" id="orthographytext-comment-@0">@1</script>
 
 @end
 
@@ -92,6 +127,24 @@ Creates an orthography exercise where students correct spelling or punctuation. 
 ---
 
 @orthography(`<!-- data-solution-button="2" -->`,`The apel is red`,`The apple is red.`)
+
+## `@orthographytext`
+
+          --{{0}}--
+Creates a multiline orthography exercise with a textarea. The first parameter controls when the resolve button appears.
+
+**Parameters:**
+- `@0` — LiaScript comment options for the quiz block, e.g. `<!-- data-solution-button="2" -->`
+- `@1` — Initial text (may contain errors)
+- `@2` — Correct solution
+
+``` markdown
+@orthographytext(`<!-- data-solution-button="2" -->`,`A student could read This text, copy parts of it, or correct small spelling mistakes inside it. The important point is that the text is long enough to wrap naturally and still remain clear, readable, and useful for a simple classroom exercise.`,`A student could read this text, copy parts of it, or correct small spelling mistakes inside it. The important point is that the text is long enough to wrap naturally and still remain clear, readable, and useful for a simple classroom exercise.`)
+```
+
+---
+
+@orthographytext(`<!-- data-solution-button="2" -->`,`A student could read This text, copy parts of it, or correct small spelling mistakes inside it. The important point is that the text is long enough to wrap naturally and still remain clear, readable, and useful for a simple classroom exercise.`,`A student could read this text, copy parts of it, or correct small spelling mistakes inside it. The important point is that the text is long enough to wrap naturally and still remain clear, readable, and useful for a simple classroom exercise.`)
 
 ## `@diktat`
 
@@ -154,6 +207,12 @@ Anna ging in einen @diktat(Zoo). Dort konnte sie auf einem @diktat(Lama) reiten.
 
 @orthography(`<!-- data-solution-button="4" -->`,`Es ist jetze um sechse.`,`Es ist jetzt um sechs.`)
 
+---
+
+**Example 6:** Correct the longer text in the textarea.
+
+@orthographytext(`<!-- data-solution-button="4" -->`,`This ist a deliberately long English text for testing a spelling quiz. Its main purpose is to continue over several lines, so that the quiz can show whether longer text passages are displayed correctly. A student could read this text, copy parts of it, or correct small spelling mistakes inside it. The important point is that the text is long enough to wrap naturally and still remain clear, readable, and useful for a simple classroom exercise.`,`This is a deliberately long English text for testing a spelling quiz. Its main purpose is to continue over several lines, so that the quiz can show whether longer text passages are displayed correctly. A student could read this text, copy parts of it, or correct small spelling mistakes inside it. The important point is that the text is long enough to wrap naturally and still remain clear, readable, and useful for a simple classroom exercise.`)
+
 ## Implementation
 
           --{{0}}--
@@ -194,6 +253,41 @@ script:   https://cdn.jsdelivr.net/gh/MINT-the-GAP/lia-orthography@0.0.1/dist/in
 </div>
 
 <script type="text/plain" id="orthography-comment-@0">@1</script>
+
+@end
+
+@orthographytext: @orthographytext_(@uid,`@0`,`@1`,`@2`)
+
+@orthographytext_
+<div id="orthographytext-ui-@0" class="orthography-ui" data-ortho-uid="@0">
+  <div id="orthographytext-task-@0" class="orthography-task">
+    <div class="orthography-wrap" id="orthographytext-wrap-@0" data-ortho-uid="@0">
+      <span id="orthographytext-start-@0" style="display:none">@2</span>
+      <span id="orthographytext-solution-@0" style="display:none">@3</span>
+
+      <textarea id="orthographytext-input-@0" data-ortho-uid="@0" data-id="lia-quiz-@0" class="lia-input lia-quiz__input" style="margin-bottom:.5rem; resize:vertical" rows="4">@2</textarea>
+
+      <button type="button" class="lia-btn lia-btn--outline ortho-reset-inline" id="orthographytext-reset-@0" data-ortho-uid="@0">Reset</button>
+    </div>
+  </div>
+
+  <div id="orthographytext-check-@0" class="orthography-check" data-ortho-uid="@0">
+    @1
+    [[!]]
+    <script>
+    (function(){
+      const el  = document.getElementById("orthographytext-input-@0");
+      const sol = document.getElementById("orthographytext-solution-@0");
+      if(!el || !sol) return false;
+
+      const norm = s => String(s || "").toLocaleLowerCase().replace(/\s+/g, "");
+      return norm(el.value) === norm(sol.textContent);
+    })()
+    </script>
+  </div>
+</div>
+
+<script type="text/plain" id="orthographytext-comment-@0">@1</script>
 
 @end
 

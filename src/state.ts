@@ -51,8 +51,8 @@ export function readStaticTexts(
   }
 
   if (S.liveValue === null) {
-    if (N.input) S.liveValue = N.input.value;
-    else S.liveValue = S.start;
+    const inputValue = N.input ? String(N.input.value || "") : "";
+    S.liveValue = inputValue ? inputValue : S.start;
   }
 }
 

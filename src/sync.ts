@@ -12,7 +12,9 @@ export function setInputValue(uid: string, cfg: ReturnType<typeof ensureState>["
 
   N.input.value = value;
   N.input.defaultValue = value;
-  try { N.input.setAttribute("value", value); } catch(e){}
+  if (N.input.tagName !== "TEXTAREA") {
+    try { N.input.setAttribute("value", value); } catch(e){}
+  }
 }
 
 export function syncSolvedFromQuiz(
