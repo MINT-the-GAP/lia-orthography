@@ -399,17 +399,20 @@ function $f322f17f239b2b8e$export$702081a5d9f33ebc(stateMap, flags) {
 
 function $a541277566782c5f$var$disableBrowserWritingAids(root) {
     const scope = root || document;
-    const elements = scope.querySelectorAll("input, textarea, [contenteditable='true'], [contenteditable=''], [contenteditable='plaintext-only']");
-    elements.forEach((element)=>{
-        if ("spellcheck" in element) element.spellcheck = false;
-        element.setAttribute("spellcheck", "false");
-        element.setAttribute("autocorrect", "off");
-        element.setAttribute("autocapitalize", "none");
-        element.setAttribute("autocomplete", "off");
-        element.setAttribute("aria-autocomplete", "none");
-        element.setAttribute("data-gramm", "false");
-        element.setAttribute("data-gramm_editor", "false");
-        element.setAttribute("data-enable-grammarly", "false");
+    const wraps = scope.querySelectorAll(".orthography-wrap");
+    wraps.forEach((wrap)=>{
+        const elements = wrap.querySelectorAll("input, textarea, [contenteditable='true'], [contenteditable=''], [contenteditable='plaintext-only']");
+        elements.forEach((element)=>{
+            if ("spellcheck" in element) element.spellcheck = false;
+            element.setAttribute("spellcheck", "false");
+            element.setAttribute("autocorrect", "off");
+            element.setAttribute("autocapitalize", "none");
+            element.setAttribute("autocomplete", "off");
+            element.setAttribute("aria-autocomplete", "none");
+            element.setAttribute("data-gramm", "false");
+            element.setAttribute("data-gramm_editor", "false");
+            element.setAttribute("data-enable-grammarly", "false");
+        });
     });
 }
 function $a541277566782c5f$var$getUidFromOrthographyInput(node) {
