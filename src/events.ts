@@ -196,6 +196,65 @@ function handleResolve(
   }, 0);
 }
 
+function trimInputElement(inp: HTMLInputElement | HTMLTextAreaElement): boolean {
+  if (!inp) return false;
+
+  const v = String(inp.value == null ? "" : inp.value);
+  const t = v.replace(/^\s+|\s+$/g, "");
+  if (t === v) return false;
+
+  const proto =
+    inp.tagName === "TEXTAREA"
+      ? HTMLTextAreaElement.prototype
+      : HTMLInputElement.prototype;
+  const desc = Object.getOwnPropertyDescriptor(proto, "value");
+  const setter = desc && desc.set;
+  if (setter) {
+    setter.call(inp, t);
+  } else {
+    inp.value = t;
+  }
+  try { inp.dispatchEvent(new Event("input", { bubbles: true })); } catch (e) {}
+  try { inp.dispatchEvent(new Event("change", { bubbles: true })); } catch (e) {}
+  return true;
+}
+
+function trimAllDiktatInputs(): void {
+  const inputs = document.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+    '.lia-diktat input, .lia-diktat textarea'
+  );
+  inputs.forEach((inp) => trimInputElement(inp));
+}
+
+function bindDiktatTrim(): void {
+  // Primary mechanism: trim on focus loss BEFORE the click on .lia-quiz__check is processed.
+  // Elm's input listener fires synchronously on the dispatched "input" event, so the model
+  // holds the trimmed value by the time the check button's click handler runs.
+  document.addEventListener("focusout", (ev) => {
+    const target = ev.target;
+    if (!(target instanceof Element)) return;
+    if (target.tagName !== "INPUT" && target.tagName !== "TEXTAREA") return;
+    if (!target.closest(".lia-diktat")) return;
+    trimInputElement(target as HTMLInputElement | HTMLTextAreaElement);
+  }, true);
+
+  // Belt and braces: also trim all diktat inputs on any quiz check click and Enter.
+  document.addEventListener("click", (ev) => {
+    const target = ev.target;
+    if (!(target instanceof Element)) return;
+    if (!target.closest(".lia-quiz__check")) return;
+    trimAllDiktatInputs();
+  }, true);
+
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key !== "Enter") return;
+    const target = ev.target;
+    if (!(target instanceof Element)) return;
+    if (!target.closest(".lia-diktat")) return;
+    trimInputElement(target as HTMLInputElement | HTMLTextAreaElement);
+  }, true);
+}
+
 export function startGlobal(
   stateMap: Record<string, OrthographyState>,
   flags: { started: boolean; styleInstalled: { done: boolean }; syncScheduled: boolean; lateSyncTimer: number | null },
@@ -206,6 +265,7 @@ export function startGlobal(
 
   ensureStyle(flags.styleInstalled);
   disableBrowserWritingAids(document);
+  bindDiktatTrim();
 
   document.addEventListener("input", (ev) => {
     const target = ev.target;

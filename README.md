@@ -155,12 +155,12 @@ Creates a dictation gap where the word is read aloud by the narrator and student
 - `@0` — The word or phrase to dictate
 
 ``` markdown
-Anna went to the @diktat(zoo). There she could ride on a @diktat(llama).
+Anna went to the @diktat(zoo). There she could ride on a @diktat(lama).
 ```
 
 ---
 
-Anna went to the @diktat(zoo). There she could ride on a @diktat(llama).
+Anna went to the  @diktat(zoo). There she could ride on a @diktat(lama).
 
 ## Examples
 
@@ -170,11 +170,8 @@ The following exercises combine dictation and orthography in a realistic classro
 **Example 1:** Listen to the sentence and write it correctly into the input field.
 
 
-{{|> Deutsch Female}}
-<!-- style="position: absolute; left: -9999px;" -->
-Anna sitzt auf einem fliegenden Teppich.
+@diktat(Anna sitzt auf einem fliegenden Teppich.)
 
-[[    Anna sitzt auf einem fliegenden Teppich.    ]]
 
 
 --- 

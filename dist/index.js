@@ -399,20 +399,17 @@ function $f322f17f239b2b8e$export$702081a5d9f33ebc(stateMap, flags) {
 
 function $a541277566782c5f$var$disableBrowserWritingAids(root) {
     const scope = root || document;
-    const wraps = scope.querySelectorAll(".orthography-wrap");
-    wraps.forEach((wrap)=>{
-        const elements = wrap.querySelectorAll("input, textarea, [contenteditable='true'], [contenteditable=''], [contenteditable='plaintext-only']");
-        elements.forEach((element)=>{
-            if ("spellcheck" in element) element.spellcheck = false;
-            element.setAttribute("spellcheck", "false");
-            element.setAttribute("autocorrect", "off");
-            element.setAttribute("autocapitalize", "none");
-            element.setAttribute("autocomplete", "off");
-            element.setAttribute("aria-autocomplete", "none");
-            element.setAttribute("data-gramm", "false");
-            element.setAttribute("data-gramm_editor", "false");
-            element.setAttribute("data-enable-grammarly", "false");
-        });
+    const elements = scope.querySelectorAll("input, textarea, [contenteditable='true'], [contenteditable=''], [contenteditable='plaintext-only']");
+    elements.forEach((element)=>{
+        if ("spellcheck" in element) element.spellcheck = false;
+        element.setAttribute("spellcheck", "false");
+        element.setAttribute("autocorrect", "off");
+        element.setAttribute("autocapitalize", "none");
+        element.setAttribute("autocomplete", "off");
+        element.setAttribute("aria-autocomplete", "none");
+        element.setAttribute("data-gramm", "false");
+        element.setAttribute("data-gramm_editor", "false");
+        element.setAttribute("data-enable-grammarly", "false");
     });
 }
 function $a541277566782c5f$var$getUidFromOrthographyInput(node) {
@@ -515,11 +512,64 @@ function $a541277566782c5f$var$handleResolve(stateMap, flags, uid, ev) {
         (0, $f322f17f239b2b8e$export$702081a5d9f33ebc)(stateMap, flags);
     }, 0);
 }
+function $a541277566782c5f$var$trimInputElement(inp) {
+    if (!inp) return false;
+    const v = String(inp.value == null ? "" : inp.value);
+    const t = v.replace(/^\s+|\s+$/g, "");
+    if (t === v) return false;
+    const proto = inp.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+    const desc = Object.getOwnPropertyDescriptor(proto, "value");
+    const setter = desc && desc.set;
+    if (setter) setter.call(inp, t);
+    else inp.value = t;
+    try {
+        inp.dispatchEvent(new Event("input", {
+            bubbles: true
+        }));
+    } catch (e) {}
+    try {
+        inp.dispatchEvent(new Event("change", {
+            bubbles: true
+        }));
+    } catch (e) {}
+    return true;
+}
+function $a541277566782c5f$var$trimAllDiktatInputs() {
+    const inputs = document.querySelectorAll('.lia-diktat input, .lia-diktat textarea');
+    inputs.forEach((inp)=>$a541277566782c5f$var$trimInputElement(inp));
+}
+function $a541277566782c5f$var$bindDiktatTrim() {
+    // Primary mechanism: trim on focus loss BEFORE the click on .lia-quiz__check is processed.
+    // Elm's input listener fires synchronously on the dispatched "input" event, so the model
+    // holds the trimmed value by the time the check button's click handler runs.
+    document.addEventListener("focusout", (ev)=>{
+        const target = ev.target;
+        if (!(target instanceof Element)) return;
+        if (target.tagName !== "INPUT" && target.tagName !== "TEXTAREA") return;
+        if (!target.closest(".lia-diktat")) return;
+        $a541277566782c5f$var$trimInputElement(target);
+    }, true);
+    // Belt and braces: also trim all diktat inputs on any quiz check click and Enter.
+    document.addEventListener("click", (ev)=>{
+        const target = ev.target;
+        if (!(target instanceof Element)) return;
+        if (!target.closest(".lia-quiz__check")) return;
+        $a541277566782c5f$var$trimAllDiktatInputs();
+    }, true);
+    document.addEventListener("keydown", (ev)=>{
+        if (ev.key !== "Enter") return;
+        const target = ev.target;
+        if (!(target instanceof Element)) return;
+        if (!target.closest(".lia-diktat")) return;
+        $a541277566782c5f$var$trimInputElement(target);
+    }, true);
+}
 function $a541277566782c5f$export$2baef26cee7194d4(stateMap, flags, observer) {
     if (flags.started) return;
     flags.started = true;
     (0, $2f96dbadf81a4e19$export$b9324dd3ed41badd)(flags.styleInstalled);
     $a541277566782c5f$var$disableBrowserWritingAids(document);
+    $a541277566782c5f$var$bindDiktatTrim();
     document.addEventListener("input", (ev)=>{
         const target = ev.target;
         if (!(target instanceof Element)) return;
