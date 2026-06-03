@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 author:   MINT-the-GAP, Martin Lommatzsch, Jihad Hyadi
 version:  1.0.1
 language: en
@@ -26,13 +26,13 @@ script:   ./dist/index.js
   <div id="orthography-check-@0" class="orthography-check" data-ortho-uid="@0">
     @1
     [[!]]
-    <script>
+    <script modify="false">
     (function(){
       const el  = document.getElementById("orthography-input-@0");
       const sol = document.getElementById("orthography-solution-@0");
       if(!el || !sol) return false;
 
-      const norm = s => String(s || "").toLocaleLowerCase().replace(/\s+/g, "");
+      const norm = s => String(s || "").normalize("NFKC").replace(/[\u201E\u201C\u201D\u201F\u00AB\u00BB\u2039\u203A\u0022]/g, '"').replace(/[\u201A\u2018\u2019\u201B]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase().replace(/\s+/g, "");
       return norm(el.value) === norm(sol.textContent);
     })()
     </script>
@@ -61,13 +61,13 @@ script:   ./dist/index.js
   <div id="orthographytext-check-@0" class="orthography-check" data-ortho-uid="@0">
     @1
     [[!]]
-    <script>
+    <script modify="false">
     (function(){
       const el  = document.getElementById("orthographytext-input-@0");
       const sol = document.getElementById("orthographytext-solution-@0");
       if(!el || !sol) return false;
 
-      const norm = s => String(s || "").toLocaleLowerCase().replace(/\s+/g, "");
+      const norm = s => String(s || "").normalize("NFKC").replace(/[\u201E\u201C\u201D\u201F\u00AB\u00BB\u2039\u203A\u0022]/g, '"').replace(/[\u201A\u2018\u2019\u201B]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase().replace(/\s+/g, "");
       return norm(el.value) === norm(sol.textContent);
     })()
     </script>
@@ -195,7 +195,7 @@ Anna ging in einen @diktat(Zoo). Dort konnte sie auf einem @diktat(Lama) reiten.
 
 **Example 4:** Add the punctuation to form correct direct speech. (Resolve unlocks after 2 attempts.)
 
-@orthography(`<!-- data-solution-button="2" -->`,`Der Apfel ist rot sagte Ben`,`"Der Apfel ist rot", sagte Ben.`)
+@orthography(`<!-- data-solution-button="2" -->`,`Der Apfel ist rot sagte Ben`,`„Der Apfel ist rot“, sagte Ben.`)
 
 --- 
 
@@ -242,7 +242,7 @@ script:   https://cdn.jsdelivr.net/gh/MINT-the-GAP/lia-orthography@0.0.1/dist/in
       const sol = document.getElementById("orthography-solution-@0");
       if(!el || !sol) return false;
 
-      const norm = s => String(s || "").toLocaleLowerCase().replace(/\s+/g, "");
+      const norm = s => String(s || "").normalize("NFKC").replace(/[„""‟«»‹›"]/g, '"').replace(/[‚''‛]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase().replace(/\s+/g, "");
       return norm(el.value) === norm(sol.textContent);
     })()
     </script>
@@ -277,7 +277,7 @@ script:   https://cdn.jsdelivr.net/gh/MINT-the-GAP/lia-orthography@0.0.1/dist/in
       const sol = document.getElementById("orthographytext-solution-@0");
       if(!el || !sol) return false;
 
-      const norm = s => String(s || "").toLocaleLowerCase().replace(/\s+/g, "");
+      const norm = s => String(s || "").normalize("NFKC").replace(/[„""‟«»‹›"]/g, '"').replace(/[‚''‛]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase().replace(/\s+/g, "");
       return norm(el.value) === norm(sol.textContent);
     })()
     </script>
