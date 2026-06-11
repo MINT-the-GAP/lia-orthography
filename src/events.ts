@@ -199,7 +199,7 @@ function handleResolve(
 function trimInputElement(inp: HTMLInputElement | HTMLTextAreaElement): boolean {
   if (!inp) return false;
 
-  const v = String(inp.value == null ? "" : inp.value);
+  const v = String(inp.value);
   const t = v.replace(/^\s+|\s+$/g, "");
   if (t === v) return false;
 
@@ -238,20 +238,12 @@ function bindDiktatTrim(): void {
     trimInputElement(target as HTMLInputElement | HTMLTextAreaElement);
   }, true);
 
-  // Belt and braces: also trim all diktat inputs on any quiz check click and Enter.
+  // Belt and braces: also trim all diktat inputs on any quiz check click.
   document.addEventListener("click", (ev) => {
     const target = ev.target;
     if (!(target instanceof Element)) return;
     if (!target.closest(".lia-quiz__check")) return;
     trimAllDiktatInputs();
-  }, true);
-
-  document.addEventListener("keydown", (ev) => {
-    if (ev.key !== "Enter") return;
-    const target = ev.target;
-    if (!(target instanceof Element)) return;
-    if (!target.closest(".lia-diktat")) return;
-    trimInputElement(target as HTMLInputElement | HTMLTextAreaElement);
   }, true);
 }
 

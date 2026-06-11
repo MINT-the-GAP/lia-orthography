@@ -514,7 +514,7 @@ function $a541277566782c5f$var$handleResolve(stateMap, flags, uid, ev) {
 }
 function $a541277566782c5f$var$trimInputElement(inp) {
     if (!inp) return false;
-    const v = String(inp.value == null ? "" : inp.value);
+    const v = String(inp.value);
     const t = v.replace(/^\s+|\s+$/g, "");
     if (t === v) return false;
     const proto = inp.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
@@ -549,19 +549,12 @@ function $a541277566782c5f$var$bindDiktatTrim() {
         if (!target.closest(".lia-diktat")) return;
         $a541277566782c5f$var$trimInputElement(target);
     }, true);
-    // Belt and braces: also trim all diktat inputs on any quiz check click and Enter.
+    // Belt and braces: also trim all diktat inputs on any quiz check click.
     document.addEventListener("click", (ev)=>{
         const target = ev.target;
         if (!(target instanceof Element)) return;
         if (!target.closest(".lia-quiz__check")) return;
         $a541277566782c5f$var$trimAllDiktatInputs();
-    }, true);
-    document.addEventListener("keydown", (ev)=>{
-        if (ev.key !== "Enter") return;
-        const target = ev.target;
-        if (!(target instanceof Element)) return;
-        if (!target.closest(".lia-diktat")) return;
-        $a541277566782c5f$var$trimInputElement(target);
     }, true);
 }
 function $a541277566782c5f$export$2baef26cee7194d4(stateMap, flags, observer) {
