@@ -282,6 +282,13 @@ function $f322f17f239b2b8e$export$8506aef7b04f3a79(stateMap, uid) {
     const B = (0, $2f96dbadf81a4e19$export$20fbbf30e1f4ce8a)(uid, S.cfg);
     const quiz = B?.quiz;
     if (!quiz) return;
+    if (S.cfg?.gateRaw === undefined) {
+        const gateRaw = quiz.getAttribute("data-solution-button");
+        if (gateRaw !== null) {
+            S.comment = gateRaw;
+            S.gate = (0, $faefaad95e5fcca0$export$fab1ce0fa1765516)(gateRaw);
+        }
+    }
     if (!S.solved) S.solved = quiz.classList.contains("solved") || quiz.classList.contains("resolved");
 }
 function $f322f17f239b2b8e$export$1ab7fa8d75d027ec(stateMap, uid) {

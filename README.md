@@ -1,6 +1,6 @@
 ﻿<!--
 author:   MINT-the-GAP, Martin Lommatzsch, Jihad Hyadi
-version:  1.0.1
+version:  1.1.0
 language: en
 edit: true
 narrator: US English Female
@@ -23,24 +23,21 @@ script:   ./dist/index.js
     </div>
   </div>
 
-  <div id="orthography-check-@0" class="orthography-check" data-ortho-uid="@0">
-    @1
-    [[!]]
-    <script modify="false">
-    (function(){
-      const el  = document.getElementById("orthography-input-@0");
-      const sol = document.getElementById("orthography-solution-@0");
-      if(!el || !sol) return false;
-
-      const norm = s => String(s || "").normalize("NFKC").replace(/[\u201E\u201C\u201D\u201F\u00AB\u00BB\u2039\u203A\u0022]/g, '"').replace(/[\u201A\u2018\u2019\u201B]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase().replace(/\s+/g, "");
-      return norm(el.value) === norm(sol.textContent);
-    })()
-    </script>
-  </div>
+  <div id="orthography-check-@0" class="orthography-check" data-ortho-uid="@0" style="display:none"></div>
 </div>
 
-<script type="text/plain" id="orthography-comment-@0">@1</script>
+@1
+[[!]]
+<script modify="false">
+(function(){
+  const el  = document.getElementById("orthography-input-@0");
+  const sol = document.getElementById("orthography-solution-@0");
+  if(!el || !sol) return false;
 
+  const norm = s => String(s || "").normalize("NFKC").replace(/[\u201E\u201C\u201D\u201F\u00AB\u00BB\u2039\u203A\u0022]/g, '"').replace(/[\u201A\u2018\u2019\u201B]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase().replace(/\s+/g, "");
+  return norm(el.value) === norm(sol.textContent);
+})()
+</script>
 @end
 
 @orthographytext: @orthographytext_(@uid,`@0`,`@1`,`@2`)
@@ -58,24 +55,21 @@ script:   ./dist/index.js
     </div>
   </div>
 
-  <div id="orthographytext-check-@0" class="orthography-check" data-ortho-uid="@0">
-    @1
-    [[!]]
-    <script modify="false">
-    (function(){
-      const el  = document.getElementById("orthographytext-input-@0");
-      const sol = document.getElementById("orthographytext-solution-@0");
-      if(!el || !sol) return false;
-
-      const norm = s => String(s || "").normalize("NFKC").replace(/[\u201E\u201C\u201D\u201F\u00AB\u00BB\u2039\u203A\u0022]/g, '"').replace(/[\u201A\u2018\u2019\u201B]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase().replace(/\s+/g, "");
-      return norm(el.value) === norm(sol.textContent);
-    })()
-    </script>
-  </div>
+  <div id="orthographytext-check-@0" class="orthography-check" data-ortho-uid="@0" style="display:none"></div>
 </div>
 
-<script type="text/plain" id="orthographytext-comment-@0">@1</script>
+@1
+[[!]]
+<script modify="false">
+(function(){
+  const el  = document.getElementById("orthographytext-input-@0");
+  const sol = document.getElementById("orthographytext-solution-@0");
+  if(!el || !sol) return false;
 
+  const norm = s => String(s || "").normalize("NFKC").replace(/[\u201E\u201C\u201D\u201F\u00AB\u00BB\u2039\u203A\u0022]/g, '"').replace(/[\u201A\u2018\u2019\u201B]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase().replace(/\s+/g, "");
+  return norm(el.value) === norm(sol.textContent);
+})()
+</script>
 @end
 
 @diktat: @diktat_(@uid,@0)
@@ -120,6 +114,8 @@ Creates an orthography exercise where students correct spelling or punctuation. 
 - `@1` — Initial text (may contain errors)
 - `@2` — Correct solution
 
+A native LiaScript detailed-solution block can follow the macro call. It stays hidden until the quiz is solved or resolved.
+
 ``` markdown
 @orthography(`<!-- data-solution-button="2" -->`,`The apel is red`,`The apple is red.`)
 ```
@@ -154,6 +150,8 @@ Creates a dictation gap where the word is read aloud by the narrator and student
 **Parameters:**
 - `@0` — The word or phrase to dictate
 
+All `@diktat` gaps in one paragraph form one LiaScript multi-quiz. A native detailed-solution block placed directly after that paragraph belongs to the complete dictation and stays hidden until it is solved or resolved.
+
 ``` markdown
 Anna went to the @diktat(zoo). There she could ride on a @diktat(lama).
 ```
@@ -181,6 +179,9 @@ The following exercises combine dictation and orthography in a realistic classro
 
 Anna ging in einen @diktat(Zoo). Dort konnte sie auf einem @diktat(Lama) reiten.
 
+**************
+Musterlösungstext
+**************
 
 --- 
 
@@ -203,6 +204,10 @@ Anna ging in einen @diktat(Zoo). Dort konnte sie auf einem @diktat(Lama) reiten.
 **Example 5:** Correct the spelling mistakes in the sentence.
 
 @orthography(`<!-- data-solution-button="4" -->`,`Es ist jetze um sechse.`,`Es ist jetzt um sechs.`)
+
+**************
+Musterlösungstext
+**************
 
 ---
 
@@ -233,24 +238,21 @@ script:   https://cdn.jsdelivr.net/gh/MINT-the-GAP/lia-orthography@0.0.1/dist/in
     </div>
   </div>
 
-  <div id="orthography-check-@0" class="orthography-check" data-ortho-uid="@0">
-    @1
-    [[!]]
-    <script>
-    (function(){
-      const el  = document.getElementById("orthography-input-@0");
-      const sol = document.getElementById("orthography-solution-@0");
-      if(!el || !sol) return false;
-
-      const norm = s => String(s || "").normalize("NFKC").replace(/[„""‟«»‹›"]/g, '"').replace(/[‚''‛]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase().replace(/\s+/g, "");
-      return norm(el.value) === norm(sol.textContent);
-    })()
-    </script>
-  </div>
+  <div id="orthography-check-@0" class="orthography-check" data-ortho-uid="@0" style="display:none"></div>
 </div>
 
-<script type="text/plain" id="orthography-comment-@0">@1</script>
+@1
+[[!]]
+<script modify="false">
+(function(){
+  const el  = document.getElementById("orthography-input-@0");
+  const sol = document.getElementById("orthography-solution-@0");
+  if(!el || !sol) return false;
 
+  const norm = s => String(s || "").normalize("NFKC").replace(/[„“”‟«»‹›"]/g, '"').replace(/[‚‘’‛]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase().replace(/\s+/g, "");
+  return norm(el.value) === norm(sol.textContent);
+})()
+</script>
 @end
 
 @orthographytext: @orthographytext_(@uid,`@0`,`@1`,`@2`)
@@ -268,24 +270,21 @@ script:   https://cdn.jsdelivr.net/gh/MINT-the-GAP/lia-orthography@0.0.1/dist/in
     </div>
   </div>
 
-  <div id="orthographytext-check-@0" class="orthography-check" data-ortho-uid="@0">
-    @1
-    [[!]]
-    <script>
-    (function(){
-      const el  = document.getElementById("orthographytext-input-@0");
-      const sol = document.getElementById("orthographytext-solution-@0");
-      if(!el || !sol) return false;
-
-      const norm = s => String(s || "").normalize("NFKC").replace(/[„""‟«»‹›"]/g, '"').replace(/[‚''‛]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase().replace(/\s+/g, "");
-      return norm(el.value) === norm(sol.textContent);
-    })()
-    </script>
-  </div>
+  <div id="orthographytext-check-@0" class="orthography-check" data-ortho-uid="@0" style="display:none"></div>
 </div>
 
-<script type="text/plain" id="orthographytext-comment-@0">@1</script>
+@1
+[[!]]
+<script modify="false">
+(function(){
+  const el  = document.getElementById("orthographytext-input-@0");
+  const sol = document.getElementById("orthographytext-solution-@0");
+  if(!el || !sol) return false;
 
+  const norm = s => String(s || "").normalize("NFKC").replace(/[„“”‟«»‹›"]/g, '"').replace(/[‚‘’‛]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase().replace(/\s+/g, "");
+  return norm(el.value) === norm(sol.textContent);
+})()
+</script>
 @end
 
 @diktat: @diktat_(@uid,@0)

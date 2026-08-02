@@ -2,7 +2,7 @@
  * Sync logic: input value management, reset/resolve state, and scheduled sync scheduling.
  */
 
-import { OrthographyState, norm } from "./types";
+import { OrthographyState, norm, parseGate } from "./types";
 import { ensureQuizBinding, getNodes } from "./dom";
 import { discoverAll, ensureState, readStaticTexts } from "./state";
 
@@ -26,6 +26,14 @@ export function syncSolvedFromQuiz(
   const quiz = B?.quiz;
 
   if (!quiz) return;
+
+  if (S.cfg?.gateRaw === undefined) {
+    const gateRaw = quiz.getAttribute("data-solution-button");
+    if (gateRaw !== null) {
+      S.comment = gateRaw;
+      S.gate = parseGate(gateRaw);
+    }
+  }
 
   if (!S.solved) {
     S.solved =
