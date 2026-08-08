@@ -57,6 +57,26 @@ export function ensureStyle(installed: { done: boolean }): void {
         display:none !important;
       }
 
+      .ortho-lines{
+        box-sizing:border-box;
+        max-inline-size:100%;
+        margin-block:1em;
+        padding-inline-start:3.25em;
+        list-style-position:outside;
+      }
+
+      .ortho-lines > li{
+        min-inline-size:0;
+        margin-block:0;
+        padding-inline-start:.4em;
+        line-height:inherit;
+        overflow-wrap:anywhere;
+      }
+
+      .ortho-lines > li::marker{
+        font-variant-numeric:tabular-nums;
+      }
+
       .lia-quiz__resolve.ortho-resolve-faded{
         opacity:.38 !important;
         transition:opacity .18s ease;

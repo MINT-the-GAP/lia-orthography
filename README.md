@@ -1,10 +1,10 @@
 ﻿<!--
 author:   MINT-the-GAP, Martin Lommatzsch, Jihad Hyadi
-version:  1.1.0
+version:  1.2.0
 language: en
 edit: true
 narrator: US English Female
-comment:  Orthography exercises with gated resolve, sticky solutions, and reset.
+comment:  Orthography exercises and line-numbered reading texts.
 
 script:   ./dist/index.js
 
@@ -34,7 +34,11 @@ script:   ./dist/index.js
   const sol = document.getElementById("orthography-solution-@0");
   if(!el || !sol) return false;
 
-  const norm = s => String(s || "").normalize("NFKC").replace(/[\u201E\u201C\u201D\u201F\u00AB\u00BB\u2039\u203A\u0022]/g, '"').replace(/[\u201A\u2018\u2019\u201B]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase().replace(/\s+/g, "");
+  const doubleSpaceHelp = /\bdoublespacehelp\b\s*=\s*["']?(?:on|true|1|yes)(?=["'\s>]|$)/i.test("@'1");
+  const norm = s => {
+    const value = String(s || "").normalize("NFKC").replace(/[\u201E\u201C\u201D\u201F\u00AB\u00BB\u2039\u203A\u0022]/g, '"').replace(/[\u201A\u2018\u2019\u201B]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase();
+    return doubleSpaceHelp ? value.trim().replace(/\s+/g, " ") : value;
+  };
   return norm(el.value) === norm(sol.textContent);
 })()
 </script>
@@ -66,8 +70,31 @@ script:   ./dist/index.js
   const sol = document.getElementById("orthographytext-solution-@0");
   if(!el || !sol) return false;
 
-  const norm = s => String(s || "").normalize("NFKC").replace(/[\u201E\u201C\u201D\u201F\u00AB\u00BB\u2039\u203A\u0022]/g, '"').replace(/[\u201A\u2018\u2019\u201B]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase().replace(/\s+/g, "");
+  const doubleSpaceHelp = /\bdoublespacehelp\b\s*=\s*["']?(?:on|true|1|yes)(?=["'\s>]|$)/i.test("@'1");
+  const norm = s => {
+    const value = String(s || "").normalize("NFKC").replace(/[\u201E\u201C\u201D\u201F\u00AB\u00BB\u2039\u203A\u0022]/g, '"').replace(/[\u201A\u2018\u2019\u201B]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase();
+    return doubleSpaceHelp ? value.trim().replace(/\s+/g, " ") : value;
+  };
   return norm(el.value) === norm(sol.textContent);
+})()
+</script>
+@end
+
+@linenumbers
+<script run-once="true" modify="false" style="display:block; width:100%">
+(function(){
+  const source = `@'0`
+    .replace(/[\u2028\u2029]/gu, "\n")
+    .replace(/\r\n?/gu, "\n")
+    .replace(/\n$/u, "");
+  const lines = source.split("\n");
+  const numbered = lines
+    .map((line, index) => `${index + 1}. ${line || "<br>"}`)
+    .join("\n");
+
+  return `LIASCRIPT:
+<!-- class="ortho-lines" data-authored-lines="${lines.length}" -->
+${numbered}`;
 })()
 </script>
 @end
@@ -100,7 +127,7 @@ https://github.com/MINT-the-GAP/lia-orthography
 
    `import: https://raw.githubusercontent.com/MINT-the-GAP/lia-orthography/0.0.1/README.md`
 
-2. Use `@orthography` or `@diktat` in your document (see examples below)
+2. Use `@orthography`, `@orthographytext`, `@linenumbers`, or `@diktat` in your document (see examples below)
 
 3. Clone this repository on GitHub
 
@@ -114,15 +141,19 @@ Creates an orthography exercise where students correct spelling or punctuation. 
 - `@1` — Initial text (may contain errors)
 - `@2` — Correct solution
 
+Add `doublespacehelp="on"` to `@0` to trim surrounding whitespace and collapse every whitespace run to one space before grading. Without it, whitespace remains significant.
+
 A native LiaScript detailed-solution block can follow the macro call. It stays hidden until the quiz is solved or resolved.
 
 ``` markdown
-@orthography(`<!-- data-solution-button="2" -->`,`The apel is red`,`The apple is red.`)
+@orthography(`<!-- data-solution-button="2" doublespacehelp="on" -->`,`Es ist jetze um sechse.`,`Es ist jetzt um sechs.`)
 ```
+
+With that option, `   Hallo,   mein  Name  ist Martin.  ` is accepted for the solution `Hallo, mein Name ist Martin.`. Missing word spaces remain errors.
 
 ---
 
-@orthography(`<!-- data-solution-button="2" -->`,`The apel is red`,`The apple is red.`)
+@orthography(`<!-- data-solution-button="2" doublespacehelp="on" -->`,`Es ist jetze um sechse.`,`Es ist jetzt um sechs.`)
 
 ## `@orthographytext`
 
@@ -134,6 +165,8 @@ Creates a multiline orthography exercise with a textarea. The first parameter co
 - `@1` — Initial text (may contain errors)
 - `@2` — Correct solution
 
+The optional `doublespacehelp="on"` attribute uses the same whitespace normalization as `@orthography`, including for pasted tabs or line breaks.
+
 ``` markdown
 @orthographytext(`<!-- data-solution-button="2" -->`,`A student could read This text, copy parts of it, or correct small spelling mistakes inside it. The important point is that the text is long enough to wrap naturally and still remain clear, readable, and useful for a simple classroom exercise.`,`A student could read this text, copy parts of it, or correct small spelling mistakes inside it. The important point is that the text is long enough to wrap naturally and still remain clear, readable, and useful for a simple classroom exercise.`)
 ```
@@ -141,6 +174,31 @@ Creates a multiline orthography exercise with a textarea. The first parameter co
 ---
 
 @orthographytext(`<!-- data-solution-button="2" -->`,`A student could read This text, copy parts of it, or correct small spelling mistakes inside it. The important point is that the text is long enough to wrap naturally and still remain clear, readable, and useful for a simple classroom exercise.`,`A student could read this text, copy parts of it, or correct small spelling mistakes inside it. The important point is that the text is long enough to wrap naturally and still remain clear, readable, and useful for a simple classroom exercise.`)
+
+## `@linenumbers`
+
+          --{{0}}--
+Displays ordinary inline LiaScript text with one line number for every physical line written by the author. A long line may wrap visually on a narrow screen, but all of its wrapped text keeps the same number. Intentionally empty lines are preserved and numbered as well.
+
+Use a fenced block so that LiaScript passes the authored line breaks to the macro:
+
+```` markdown
+```markdown @linenumbers
+The **first** authored line.
+A deliberately long second line can wrap automatically without receiving another number.
+The third line contains a [link](https://example.org).
+```
+````
+
+Inline LiaScript such as emphasis, links, formulas, and inline HTML is rendered normally. Multiline block structures such as tables, nested lists, or additional fenced blocks are outside this environment's scope because each physical source line is deliberately treated as a separate numbered line.
+
+---
+
+```markdown @linenumbers
+The **first** authored line.
+A deliberately long second line can wrap automatically without receiving another number.
+The third line contains a [link](https://example.org).
+```
 
 ## `@diktat`
 
@@ -203,7 +261,7 @@ Musterlösungstext
 
 **Example 5:** Correct the spelling mistakes in the sentence.
 
-@orthography(`<!-- data-solution-button="4" -->`,`Es ist jetze um sechse.`,`Es ist jetzt um sechs.`)
+@orthography(`<!-- data-solution-button="4" doublespacehelp="on" -->`,`Es ist jetze um sechse.`,`Es ist jetzt um sechs.`)
 
 **************
 Musterlösungstext
@@ -249,7 +307,11 @@ script:   https://cdn.jsdelivr.net/gh/MINT-the-GAP/lia-orthography@0.0.1/dist/in
   const sol = document.getElementById("orthography-solution-@0");
   if(!el || !sol) return false;
 
-  const norm = s => String(s || "").normalize("NFKC").replace(/[„“”‟«»‹›"]/g, '"').replace(/[‚‘’‛]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase().replace(/\s+/g, "");
+  const doubleSpaceHelp = /\bdoublespacehelp\b\s*=\s*["']?(?:on|true|1|yes)(?=["'\s>]|$)/i.test("@'1");
+  const norm = s => {
+    const value = String(s || "").normalize("NFKC").replace(/[\u201E\u201C\u201D\u201F\u00AB\u00BB\u2039\u203A\u0022]/g, '"').replace(/[\u201A\u2018\u2019\u201B]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase();
+    return doubleSpaceHelp ? value.trim().replace(/\s+/g, " ") : value;
+  };
   return norm(el.value) === norm(sol.textContent);
 })()
 </script>
@@ -281,8 +343,31 @@ script:   https://cdn.jsdelivr.net/gh/MINT-the-GAP/lia-orthography@0.0.1/dist/in
   const sol = document.getElementById("orthographytext-solution-@0");
   if(!el || !sol) return false;
 
-  const norm = s => String(s || "").normalize("NFKC").replace(/[„“”‟«»‹›"]/g, '"').replace(/[‚‘’‛]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase().replace(/\s+/g, "");
+  const doubleSpaceHelp = /\bdoublespacehelp\b\s*=\s*["']?(?:on|true|1|yes)(?=["'\s>]|$)/i.test("@'1");
+  const norm = s => {
+    const value = String(s || "").normalize("NFKC").replace(/[\u201E\u201C\u201D\u201F\u00AB\u00BB\u2039\u203A\u0022]/g, '"').replace(/[\u201A\u2018\u2019\u201B]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase();
+    return doubleSpaceHelp ? value.trim().replace(/\s+/g, " ") : value;
+  };
   return norm(el.value) === norm(sol.textContent);
+})()
+</script>
+@end
+
+@linenumbers
+<script run-once="true" modify="false" style="display:block; width:100%">
+(function(){
+  const source = `@'0`
+    .replace(/[\u2028\u2029]/gu, "\n")
+    .replace(/\r\n?/gu, "\n")
+    .replace(/\n$/u, "");
+  const lines = source.split("\n");
+  const numbered = lines
+    .map((line, index) => `${index + 1}. ${line || "<br>"}`)
+    .join("\n");
+
+  return `LIASCRIPT:
+<!-- class="ortho-lines" data-authored-lines="${lines.length}" -->
+${numbered}`;
 })()
 </script>
 @end

@@ -5,6 +5,7 @@
 export interface OrthographyConfig {
   uid: string;
   gateRaw?: string | boolean | number;
+  doubleSpaceHelpRaw?: string | boolean | number;
   commentRaw?: string;
   idUi?: string;
   idTask?: string;
@@ -28,6 +29,7 @@ export interface OrthographyState {
   uid: string;
   cfg: OrthographyConfig | null;
   gate: GateConfig;
+  doubleSpaceHelp: boolean;
   comment: string;
   start: string;
   solution: string;
@@ -57,14 +59,42 @@ export interface QuizBinding {
   resolve: HTMLElement | null;
 }
 
-export function norm(s: string): string {
+function normalizeBase(s: string): string {
   return String(s || "")
     .normalize("NFKC")
     .replace(/[„“”‟«»‹›"]/g, '"')
     .replace(/[‚‘’‛]/g, "'")
     .replace(/\u00A0/g, " ")
-    .toLocaleLowerCase()
-    .replace(/\s+/g, "");
+    .toLocaleLowerCase();
+}
+
+export function norm(s: string): string {
+  return normalizeBase(s).replace(/\s+/g, "");
+}
+
+export function normalizeAnswer(s: string, doubleSpaceHelp = false): string {
+  const normalized = normalizeBase(s);
+  return doubleSpaceHelp
+    ? normalized.trim().replace(/\s+/g, " ")
+    : normalized;
+}
+
+export function parseDoubleSpaceHelp(
+  raw: string | boolean | number | undefined
+): boolean {
+  if (typeof raw === "boolean") return raw;
+  if (typeof raw === "number") return raw === 1;
+
+  const original = String(raw || "").trim();
+  let value = original;
+  if (/\bdoublespacehelp\b/i.test(original)) {
+    const match = original.match(
+      /\bdoublespacehelp\b\s*=\s*["']?([^"'\s>]+)["']?/i
+    );
+    value = match && match[1] ? match[1] : "";
+  }
+
+  return /^(?:on|true|1|yes)$/i.test(value.trim());
 }
 
 export function parseGate(raw: string | boolean | number | undefined): GateConfig {

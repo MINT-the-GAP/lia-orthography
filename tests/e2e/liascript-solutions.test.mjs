@@ -27,12 +27,19 @@ import: ${TEMPLATE_URL}
 
 # Musterlösungsblöcke
 
+\`\`\`markdown @linenumbers
+A **short** first authored line.
+This deliberately long second authored line contains a [sample link](https://example.com/line) and enough additional words to wrap several times in a narrow reading area without ever receiving a second line number.
+
+A final fourth authored line.
+\`\`\`
+
 Anna ging in einen @diktat(Zoo). Dort konnte sie auf einem @diktat(Lama) reiten.
 **************
 <span id="diktat-musterloesung">Diktat-Musterlösung</span>
 **************
 
-@orthography(\`<!-- data-solution-button="4" -->\`,\`Es ist jetze um sechse.\`,\`Es ist jetzt um sechs.\`)
+@orthography(\`<!-- data-solution-button="4" doublespacehelp="on" -->\`,\`Hallo mein Name ist Martinn.\`,\`Hallo, mein Name ist Martin.\`)
 **************
 <span id="orthography-musterloesung">Orthography-Musterlösung</span>
 **************
@@ -104,6 +111,10 @@ async function openCourse(browser) {
     state: "visible",
     timeout: 60_000,
   });
+  await page.waitForSelector("ol.ortho-lines", {
+    state: "visible",
+    timeout: 60_000,
+  });
   await page.waitForFunction(
     () => {
       const input = document.querySelector('[id^="orthography-input-"]');
@@ -139,6 +150,88 @@ async function assertInitiallyHidden(page) {
   assert.equal(await isVisible(page, "#orthography-musterloesung"), false);
 }
 
+async function assertLineNumbers(page) {
+  const list = page.locator("ol.ortho-lines").first();
+  const rows = list.locator(":scope > li");
+
+  assert.equal(await list.getAttribute("data-authored-lines"), "4");
+  assert.equal(await rows.count(), 4);
+  assert.deepEqual(
+    await rows.evaluateAll((items) => items.map((item) => item.value)),
+    [1, 2, 3, 4],
+  );
+  assert.equal(await rows.nth(0).locator("strong").textContent(), "short");
+  assert.equal(
+    await rows.nth(1).locator('a[href="https://example.com/line"]').textContent(),
+    "sample link",
+  );
+  assert.equal((await rows.nth(2).innerText()).trim(), "");
+  assert.equal(await rows.nth(2).locator("br").count(), 1);
+  assert.equal(await list.locator("pre, code").count(), 0);
+
+  const markerStyles = await rows.evaluateAll((items) =>
+    items.map((item) => {
+      const style = getComputedStyle(item);
+      return {
+        display: style.display,
+        listStyleType: style.listStyleType,
+      };
+    }),
+  );
+  assert.ok(markerStyles.every(({ display }) => display === "list-item"));
+  assert.ok(markerStyles.every(({ listStyleType }) => listStyleType !== "none"));
+
+  await list.evaluate((element) => {
+    element.style.inlineSize = "240px";
+    element.style.maxInlineSize = "240px";
+  });
+  const visualLines = await rows.nth(1).evaluate((row) => {
+    const range = document.createRange();
+    range.selectNodeContents(row);
+    const tops = Array.from(range.getClientRects())
+      .filter((rect) => rect.width > 0 && rect.height > 0)
+      .map((rect) => Math.round(rect.top));
+    return new Set(tops).size;
+  });
+  assert.ok(visualLines > 1, "the long author line wraps visually");
+  assert.equal(await rows.count(), 4, "visual wrapping adds no list item");
+}
+
+async function assertPluginObserverSettles(page) {
+  await page.waitForTimeout(150);
+  const mutationCount = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        let count = 0;
+        const observer = new MutationObserver((records) => {
+          for (const record of records) {
+            const target = record.target;
+            if (
+              target instanceof Element &&
+              target.matches(".ortho-reset-below, .lia-quiz__resolve")
+            ) {
+              count += 1;
+            }
+          }
+        });
+        observer.observe(document.body, {
+          attributes: true,
+          attributeFilter: ["class", "aria-hidden", "tabindex"],
+          subtree: true,
+        });
+        setTimeout(() => {
+          observer.disconnect();
+          resolve(count);
+        }, 450);
+      }),
+  );
+
+  assert.ok(
+    mutationCount <= 6,
+    `orthography observer did not settle (${mutationCount} mutations)`,
+  );
+}
+
 async function assertClean({ failures, page, pageErrors }) {
   await page.waitForTimeout(300);
   assert.deepEqual(failures, [], failures.join("\n"));
@@ -151,6 +244,8 @@ async function solveBoth(browser) {
 
   try {
     await assertInitiallyHidden(page);
+    await assertLineNumbers(page);
+    await assertPluginObserverSettles(page);
     const quizzes = quizLocators(page);
     const diktatInputs = page.locator(".lia-diktat input");
     assert.equal(await diktatInputs.count(), 2);
@@ -165,12 +260,29 @@ async function solveBoth(browser) {
           ?.classList.contains("solved"),
     );
 
-    await page.locator('[id^="orthography-input-"]').fill("Es ist jetzt um sechs.");
+    const orthographyInput = page.locator('[id^="orthography-input-"]');
+    const orthographyUid = await orthographyInput.getAttribute("data-ortho-uid");
+    assert.ok(orthographyUid);
+
+    await orthographyInput.fill("Hallo,mein Name ist Martin.");
+    await quizzes.orthography.locator(".lia-quiz__check").click();
+    await page.waitForFunction(
+      (uid) => window.__ORTHOGRAPHY_EXPORT_V8__?.getAllStates?.()[uid]?.tries >= 1,
+      orthographyUid,
+    );
+    assert.equal(await isVisible(page, "#orthography-musterloesung"), false);
+    assert.equal(
+      await quizzes.orthography.evaluate((quiz) => quiz.classList.contains("solved")),
+      false,
+    );
+
+    await orthographyInput.fill("   Hallo,   mein  Name  ist Martin.  ");
     await quizzes.orthography.locator(".lia-quiz__check").click();
     await page.locator("#orthography-musterloesung").waitFor({ state: "visible" });
     await page.waitForFunction(() =>
       document.querySelector('.lia-quiz[data-ortho-uid]')?.classList.contains("solved"),
     );
+    assert.equal(await orthographyInput.inputValue(), "Hallo, mein Name ist Martin.");
     await assertClean(session);
   } finally {
     await context.close();
@@ -233,6 +345,79 @@ async function resolveBoth(browser) {
   }
 }
 
+async function navigateRunnableTemplate(browser) {
+  const context = await browser.newContext({ serviceWorkers: "block" });
+  const failures = [];
+  const pageErrors = [];
+  let crashed = false;
+
+  if (!ONLINE_TEMPLATE_URL) {
+    await context.route(TEMPLATE_URL, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "text/plain; charset=utf-8",
+        headers: { "access-control-allow-origin": "*" },
+        body: template,
+      }),
+    );
+    await context.route(BUNDLE_URL, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/javascript; charset=utf-8",
+        headers: { "access-control-allow-origin": "*" },
+        body: bundle,
+      }),
+    );
+  }
+
+  const page = await context.newPage();
+  const candidateUrls = new Set([TEMPLATE_URL, BUNDLE_URL]);
+  page.on("crash", () => {
+    crashed = true;
+  });
+  page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
+  page.on("requestfailed", (request) => {
+    if (candidateUrls.has(request.url())) {
+      failures.push(`${request.url()}: ${request.failure()?.errorText ?? "failed"}`);
+    }
+  });
+
+  try {
+    await page.goto(`${LIASCRIPT_URL}?${TEMPLATE_URL}#1`, {
+      waitUntil: "domcontentloaded",
+      timeout: 120_000,
+    });
+    await page.waitForFunction(
+      () => window.__ORTHOGRAPHY_EXPORT_V8__?.getAllStates instanceof Function,
+      undefined,
+      { timeout: 60_000 },
+    );
+
+    const implementationLink = page
+      .locator(".lia-toc__link")
+      .filter({ hasText: "Implementation" })
+      .first();
+    const targetHash = await implementationLink.getAttribute("href");
+    assert.ok(targetHash);
+    await implementationLink.click({ timeout: 15_000 });
+    await page.waitForFunction(
+      (hash) => location.hash === hash,
+      targetHash,
+      { timeout: 15_000 },
+    );
+    await page
+      .getByText("If you prefer not to use", { exact: false })
+      .waitFor({ state: "visible", timeout: 15_000 });
+    await page.waitForTimeout(500);
+
+    assert.equal(crashed, false);
+    assert.deepEqual(failures, [], failures.join("\n"));
+    assert.deepEqual(pageErrors, [], pageErrors.join("\n\n"));
+  } finally {
+    await context.close();
+  }
+}
+
 for (const [name, browserType] of ENGINES) {
   test(
     `${name}: native detailed solutions appear only after solve or resolve`,
@@ -240,6 +425,9 @@ for (const [name, browserType] of ENGINES) {
     async () => {
       const browser = await browserType.launch({ headless: true });
       try {
+        if (name === "Firefox") {
+          await navigateRunnableTemplate(browser);
+        }
         await solveBoth(browser);
         await resolveBoth(browser);
       } finally {

@@ -3,7 +3,13 @@
  * Provides orthography exercises with gated resolve, sticky solutions, and reset functionality
  */
 
-import { OrthographyConfig, OrthographyState, parseGate, getRootWindow } from "./types";
+import {
+  OrthographyConfig,
+  OrthographyState,
+  parseDoubleSpaceHelp,
+  parseGate,
+  getRootWindow
+} from "./types";
 import { readStaticTexts, ensureState } from "./state";
 import { syncUid, scheduleSync, setInputValue } from "./sync";
 import { startGlobal } from "./events";
@@ -26,6 +32,9 @@ class OrthographyModule {
     S.cfg = cfg || null;
     S.comment = (cfg && cfg.commentRaw) ? String(cfg.commentRaw) : S.comment;
     S.gate = parseGate(cfg?.gateRaw !== undefined ? cfg.gateRaw : S.comment);
+    S.doubleSpaceHelp = parseDoubleSpaceHelp(
+      cfg?.doubleSpaceHelpRaw !== undefined ? cfg.doubleSpaceHelpRaw : S.comment
+    );
 
     if (cfg && typeof cfg.startText === "string") {
       S.start = cfg.startText;

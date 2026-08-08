@@ -2,7 +2,7 @@
  * Global event handlers: input, reset, check, and resolve interactions.
  */
 
-import { OrthographyState, norm, parseUidFromString } from "./types";
+import { OrthographyState, normalizeAnswer, parseUidFromString } from "./types";
 import { getNodes, ensureStyle } from "./dom";
 import { ensureState } from "./state";
 import { syncUid, syncAll, scheduleSync, setInputValue } from "./sync";
@@ -162,7 +162,9 @@ function handleCheck(
   if (!N.input) return;
 
   const beforeValue = N.input.value;
-  const wasCorrect = norm(beforeValue) === norm(S.solution);
+  const wasCorrect =
+    normalizeAnswer(beforeValue, S.doubleSpaceHelp) ===
+    normalizeAnswer(S.solution, S.doubleSpaceHelp);
   const token = ++S.checkToken;
 
   setTimeout(() => finishCheck(stateMap, flags, uid, token, beforeValue, wasCorrect), 0);
@@ -337,7 +339,20 @@ export function startGlobal(
     if (!target) return;
 
     observer.ref = new MutationObserver((mutations) => {
+      let shouldSync = false;
+
       mutations.forEach((mutation) => {
+        if (mutation.type === "childList") {
+          shouldSync = true;
+        } else if (
+          mutation.type === "attributes" &&
+          mutation.attributeName === "class" &&
+          mutation.target instanceof Element &&
+          mutation.target.matches(".lia-quiz")
+        ) {
+          shouldSync = true;
+        }
+
         mutation.addedNodes.forEach((node) => {
           if (node.nodeType !== Node.ELEMENT_NODE) return;
           const element = node as Element;
@@ -351,14 +366,17 @@ export function startGlobal(
           }
         });
       });
-      scheduleSync(stateMap, flags);
+
+      if (shouldSync) {
+        scheduleSync(stateMap, flags);
+      }
     });
 
     observer.ref.observe(target, {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ["class", "aria-hidden", "tabindex"]
+      attributeFilter: ["class"]
     });
   };
 

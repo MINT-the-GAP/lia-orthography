@@ -14,6 +14,7 @@ export function ensureState(
       uid,
       cfg: null,
       gate: { mode: "on", n: 0 },
+      doubleSpaceHelp: false,
       comment: "",
       start: "",
       solution: "",

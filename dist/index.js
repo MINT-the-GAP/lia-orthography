@@ -3,8 +3,26 @@
  * Provides orthography exercises with gated resolve, sticky solutions, and reset functionality
  */ /**
  * Shared types and pure utility functions used across all modules.
- */ function $faefaad95e5fcca0$export$1991ecd29cc92c6b(s) {
-    return String(s || "").normalize("NFKC").replace(/[„“”‟«»‹›"]/g, '"').replace(/[‚‘’‛]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase().replace(/\s+/g, "");
+ */ function $faefaad95e5fcca0$var$normalizeBase(s) {
+    return String(s || "").normalize("NFKC").replace(/[„“”‟«»‹›"]/g, '"').replace(/[‚‘’‛]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase();
+}
+function $faefaad95e5fcca0$export$1991ecd29cc92c6b(s) {
+    return $faefaad95e5fcca0$var$normalizeBase(s).replace(/\s+/g, "");
+}
+function $faefaad95e5fcca0$export$9fee1bbbe4aa216c(s, doubleSpaceHelp = false) {
+    const normalized = $faefaad95e5fcca0$var$normalizeBase(s);
+    return doubleSpaceHelp ? normalized.trim().replace(/\s+/g, " ") : normalized;
+}
+function $faefaad95e5fcca0$export$c5de1338b6f03943(raw) {
+    if (typeof raw === "boolean") return raw;
+    if (typeof raw === "number") return raw === 1;
+    const original = String(raw || "").trim();
+    let value = original;
+    if (/\bdoublespacehelp\b/i.test(original)) {
+        const match = original.match(/\bdoublespacehelp\b\s*=\s*["']?([^"'\s>]+)["']?/i);
+        value = match && match[1] ? match[1] : "";
+    }
+    return /^(?:on|true|1|yes)$/i.test(value.trim());
 }
 function $faefaad95e5fcca0$export$fab1ce0fa1765516(raw) {
     const original = String(raw || "").trim();
@@ -99,6 +117,26 @@ function $2f96dbadf81a4e19$export$b9324dd3ed41badd(installed) {
 
       .orthography-wrap[data-ortho-solved="1"] > .ortho-reset-below{
         display:none !important;
+      }
+
+      .ortho-lines{
+        box-sizing:border-box;
+        max-inline-size:100%;
+        margin-block:1em;
+        padding-inline-start:3.25em;
+        list-style-position:outside;
+      }
+
+      .ortho-lines > li{
+        min-inline-size:0;
+        margin-block:0;
+        padding-inline-start:.4em;
+        line-height:inherit;
+        overflow-wrap:anywhere;
+      }
+
+      .ortho-lines > li::marker{
+        font-variant-numeric:tabular-nums;
       }
 
       .lia-quiz__resolve.ortho-resolve-faded{
@@ -219,6 +257,7 @@ function $a05669264f67e39b$export$b637efaa3fcc9599(stateMap, uid) {
             mode: "on",
             n: 0
         },
+        doubleSpaceHelp: false,
         comment: "",
         start: "",
         solution: "",
@@ -268,6 +307,15 @@ function $a05669264f67e39b$export$d3ae10d3b2070029(stateMap) {
  */ 
 
 
+function $f322f17f239b2b8e$var$setAttributeIfChanged(element, name, value) {
+    if (element.getAttribute(name) !== value) element.setAttribute(name, value);
+}
+function $f322f17f239b2b8e$var$removeAttributeIfPresent(element, name) {
+    if (element.hasAttribute(name)) element.removeAttribute(name);
+}
+function $f322f17f239b2b8e$var$setClassPresence(element, name, present) {
+    if (element.classList.contains(name) !== present) element.classList.toggle(name, present);
+}
 function $f322f17f239b2b8e$export$d395e3b20a2c5108(uid, cfg, value) {
     const N = (0, $2f96dbadf81a4e19$export$d668e62f6e0051f4)(uid, cfg);
     if (!N.input) return;
@@ -284,10 +332,11 @@ function $f322f17f239b2b8e$export$8506aef7b04f3a79(stateMap, uid) {
     if (!quiz) return;
     if (S.cfg?.gateRaw === undefined) {
         const gateRaw = quiz.getAttribute("data-solution-button");
-        if (gateRaw !== null) {
-            S.comment = gateRaw;
-            S.gate = (0, $faefaad95e5fcca0$export$fab1ce0fa1765516)(gateRaw);
-        }
+        if (gateRaw !== null) S.gate = (0, $faefaad95e5fcca0$export$fab1ce0fa1765516)(gateRaw);
+    }
+    if (S.cfg?.doubleSpaceHelpRaw === undefined) {
+        const doubleSpaceHelpRaw = quiz.getAttribute("doublespacehelp");
+        if (doubleSpaceHelpRaw !== null) S.doubleSpaceHelp = (0, $faefaad95e5fcca0$export$c5de1338b6f03943)(doubleSpaceHelpRaw);
     }
     if (!S.solved) S.solved = quiz.classList.contains("solved") || quiz.classList.contains("resolved");
 }
@@ -298,7 +347,8 @@ function $f322f17f239b2b8e$export$1ab7fa8d75d027ec(stateMap, uid) {
     const desired = S.solved ? S.solution : S.liveValue == null ? S.start : S.liveValue;
     const current = N.input.value;
     N.input.readOnly = !!S.solved;
-    if ((0, $faefaad95e5fcca0$export$1991ecd29cc92c6b)(current) !== (0, $faefaad95e5fcca0$export$1991ecd29cc92c6b)(desired)) $f322f17f239b2b8e$export$d395e3b20a2c5108(uid, S.cfg, desired);
+    const valuesMatch = S.solved && S.doubleSpaceHelp ? current === desired : (0, $faefaad95e5fcca0$export$1991ecd29cc92c6b)(current) === (0, $faefaad95e5fcca0$export$1991ecd29cc92c6b)(desired);
+    if (!valuesMatch) $f322f17f239b2b8e$export$d395e3b20a2c5108(uid, S.cfg, desired);
 }
 function $f322f17f239b2b8e$export$eecd29dc1a4e8610(stateMap, uid) {
     const S = (0, $a05669264f67e39b$export$b637efaa3fcc9599)(stateMap, uid);
@@ -307,16 +357,16 @@ function $f322f17f239b2b8e$export$eecd29dc1a4e8610(stateMap, uid) {
     N.wrap.dataset.orthoUid = uid;
     N.wrap.dataset.orthoSolved = S.solved ? "1" : "0";
     N.reset.dataset.orthoUid = uid;
-    N.reset.classList.add("ortho-reset-below");
+    $f322f17f239b2b8e$var$setClassPresence(N.reset, "ortho-reset-below", true);
     if (N.reset.parentElement !== N.wrap || N.reset.previousElementSibling !== N.input) N.input.insertAdjacentElement("afterend", N.reset);
     if (S.solved) {
         N.reset.disabled = true;
-        N.reset.setAttribute("aria-hidden", "true");
-        N.reset.setAttribute("tabindex", "-1");
+        $f322f17f239b2b8e$var$setAttributeIfChanged(N.reset, "aria-hidden", "true");
+        $f322f17f239b2b8e$var$setAttributeIfChanged(N.reset, "tabindex", "-1");
     } else {
         N.reset.disabled = false;
-        N.reset.removeAttribute("aria-hidden");
-        N.reset.removeAttribute("tabindex");
+        $f322f17f239b2b8e$var$removeAttributeIfPresent(N.reset, "aria-hidden");
+        $f322f17f239b2b8e$var$removeAttributeIfPresent(N.reset, "tabindex");
     }
 }
 function $f322f17f239b2b8e$export$c78cb1561c965c1c(stateMap, uid) {
@@ -327,37 +377,37 @@ function $f322f17f239b2b8e$export$c78cb1561c965c1c(stateMap, uid) {
     if (S.solved) {
         resolve.style.display = "";
         resolve.disabled = true;
-        resolve.setAttribute("aria-hidden", "true");
-        resolve.setAttribute("tabindex", "-1");
-        resolve.classList.add("ortho-resolve-faded");
+        $f322f17f239b2b8e$var$setAttributeIfChanged(resolve, "aria-hidden", "true");
+        $f322f17f239b2b8e$var$setAttributeIfChanged(resolve, "tabindex", "-1");
+        $f322f17f239b2b8e$var$setClassPresence(resolve, "ortho-resolve-faded", true);
         return;
     }
-    resolve.classList.remove("ortho-resolve-faded");
+    $f322f17f239b2b8e$var$setClassPresence(resolve, "ortho-resolve-faded", false);
     if (S.gate.mode === "off") {
         resolve.disabled = true;
         resolve.style.display = "none";
-        resolve.setAttribute("aria-hidden", "true");
-        resolve.setAttribute("tabindex", "-1");
+        $f322f17f239b2b8e$var$setAttributeIfChanged(resolve, "aria-hidden", "true");
+        $f322f17f239b2b8e$var$setAttributeIfChanged(resolve, "tabindex", "-1");
         return;
     }
     if (S.gate.mode === "attempts") {
         if (S.tries >= S.gate.n) {
             resolve.disabled = false;
             resolve.style.display = "";
-            resolve.removeAttribute("aria-hidden");
-            resolve.removeAttribute("tabindex");
+            $f322f17f239b2b8e$var$removeAttributeIfPresent(resolve, "aria-hidden");
+            $f322f17f239b2b8e$var$removeAttributeIfPresent(resolve, "tabindex");
         } else {
             resolve.disabled = true;
             resolve.style.display = "none";
-            resolve.setAttribute("aria-hidden", "true");
-            resolve.setAttribute("tabindex", "-1");
+            $f322f17f239b2b8e$var$setAttributeIfChanged(resolve, "aria-hidden", "true");
+            $f322f17f239b2b8e$var$setAttributeIfChanged(resolve, "tabindex", "-1");
         }
         return;
     }
     resolve.disabled = false;
     resolve.style.display = "";
-    resolve.removeAttribute("aria-hidden");
-    resolve.removeAttribute("tabindex");
+    $f322f17f239b2b8e$var$removeAttributeIfPresent(resolve, "aria-hidden");
+    $f322f17f239b2b8e$var$removeAttributeIfPresent(resolve, "tabindex");
 }
 function $f322f17f239b2b8e$export$10c851eaeed5d679(stateMap, uid) {
     const S = (0, $a05669264f67e39b$export$b637efaa3fcc9599)(stateMap, uid);
@@ -496,7 +546,7 @@ function $a541277566782c5f$var$handleCheck(stateMap, flags, uid, ev) {
     const N = (0, $2f96dbadf81a4e19$export$d668e62f6e0051f4)(uid, S.cfg);
     if (!N.input) return;
     const beforeValue = N.input.value;
-    const wasCorrect = (0, $faefaad95e5fcca0$export$1991ecd29cc92c6b)(beforeValue) === (0, $faefaad95e5fcca0$export$1991ecd29cc92c6b)(S.solution);
+    const wasCorrect = (0, $faefaad95e5fcca0$export$9fee1bbbe4aa216c)(beforeValue, S.doubleSpaceHelp) === (0, $faefaad95e5fcca0$export$9fee1bbbe4aa216c)(S.solution, S.doubleSpaceHelp);
     const token = ++S.checkToken;
     setTimeout(()=>$a541277566782c5f$var$finishCheck(stateMap, flags, uid, token, beforeValue, wasCorrect), 0);
 }
@@ -628,7 +678,10 @@ function $a541277566782c5f$export$2baef26cee7194d4(stateMap, flags, observer) {
         const target = document.body || document.documentElement;
         if (!target) return;
         observer.ref = new MutationObserver((mutations)=>{
+            let shouldSync = false;
             mutations.forEach((mutation)=>{
+                if (mutation.type === "childList") shouldSync = true;
+                else if (mutation.type === "attributes" && mutation.attributeName === "class" && mutation.target instanceof Element && mutation.target.matches(".lia-quiz")) shouldSync = true;
                 mutation.addedNodes.forEach((node)=>{
                     if (node.nodeType !== Node.ELEMENT_NODE) return;
                     const element = node;
@@ -637,16 +690,14 @@ function $a541277566782c5f$export$2baef26cee7194d4(stateMap, flags, observer) {
                     } else $a541277566782c5f$var$disableBrowserWritingAids(element);
                 });
             });
-            (0, $f322f17f239b2b8e$export$702081a5d9f33ebc)(stateMap, flags);
+            if (shouldSync) (0, $f322f17f239b2b8e$export$702081a5d9f33ebc)(stateMap, flags);
         });
         observer.ref.observe(target, {
             childList: true,
             subtree: true,
             attributes: true,
             attributeFilter: [
-                "class",
-                "aria-hidden",
-                "tabindex"
+                "class"
             ]
         });
     };
@@ -667,6 +718,7 @@ class $882b6d93070905b3$var$OrthographyModule {
         S.cfg = cfg || null;
         S.comment = cfg && cfg.commentRaw ? String(cfg.commentRaw) : S.comment;
         S.gate = (0, $faefaad95e5fcca0$export$fab1ce0fa1765516)(cfg?.gateRaw !== undefined ? cfg.gateRaw : S.comment);
+        S.doubleSpaceHelp = (0, $faefaad95e5fcca0$export$c5de1338b6f03943)(cfg?.doubleSpaceHelpRaw !== undefined ? cfg.doubleSpaceHelpRaw : S.comment);
         if (cfg && typeof cfg.startText === "string") S.start = cfg.startText;
         if (cfg && typeof cfg.solutionText === "string") S.solution = cfg.solutionText;
         (0, $a05669264f67e39b$export$7ff8ace17f87623e)(this.state, uid);

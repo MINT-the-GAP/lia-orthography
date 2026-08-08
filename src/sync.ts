@@ -2,9 +2,35 @@
  * Sync logic: input value management, reset/resolve state, and scheduled sync scheduling.
  */
 
-import { OrthographyState, norm, parseGate } from "./types";
+import { OrthographyState, norm, parseDoubleSpaceHelp, parseGate } from "./types";
 import { ensureQuizBinding, getNodes } from "./dom";
 import { discoverAll, ensureState, readStaticTexts } from "./state";
+
+function setAttributeIfChanged(
+  element: HTMLElement,
+  name: string,
+  value: string
+): void {
+  if (element.getAttribute(name) !== value) {
+    element.setAttribute(name, value);
+  }
+}
+
+function removeAttributeIfPresent(element: HTMLElement, name: string): void {
+  if (element.hasAttribute(name)) {
+    element.removeAttribute(name);
+  }
+}
+
+function setClassPresence(
+  element: HTMLElement,
+  name: string,
+  present: boolean
+): void {
+  if (element.classList.contains(name) !== present) {
+    element.classList.toggle(name, present);
+  }
+}
 
 export function setInputValue(uid: string, cfg: ReturnType<typeof ensureState>["cfg"], value: string): void {
   const N = getNodes(uid, cfg);
@@ -30,8 +56,14 @@ export function syncSolvedFromQuiz(
   if (S.cfg?.gateRaw === undefined) {
     const gateRaw = quiz.getAttribute("data-solution-button");
     if (gateRaw !== null) {
-      S.comment = gateRaw;
       S.gate = parseGate(gateRaw);
+    }
+  }
+
+  if (S.cfg?.doubleSpaceHelpRaw === undefined) {
+    const doubleSpaceHelpRaw = quiz.getAttribute("doublespacehelp");
+    if (doubleSpaceHelpRaw !== null) {
+      S.doubleSpaceHelp = parseDoubleSpaceHelp(doubleSpaceHelpRaw);
     }
   }
 
@@ -55,7 +87,12 @@ export function restoreLiveValue(
 
   N.input.readOnly = !!S.solved;
 
-  if (norm(current) !== norm(desired)) {
+  const valuesMatch =
+    S.solved && S.doubleSpaceHelp
+      ? current === desired
+      : norm(current) === norm(desired);
+
+  if (!valuesMatch) {
     setInputValue(uid, S.cfg, desired);
   }
 }
@@ -71,7 +108,7 @@ export function ensureResetPlacement(
   N.wrap.dataset.orthoUid = uid;
   N.wrap.dataset.orthoSolved = S.solved ? "1" : "0";
   N.reset.dataset.orthoUid = uid;
-  N.reset.classList.add("ortho-reset-below");
+  setClassPresence(N.reset, "ortho-reset-below", true);
 
   if (N.reset.parentElement !== N.wrap || N.reset.previousElementSibling !== N.input) {
     N.input.insertAdjacentElement("afterend", N.reset);
@@ -79,12 +116,12 @@ export function ensureResetPlacement(
 
   if (S.solved) {
     N.reset.disabled = true;
-    N.reset.setAttribute("aria-hidden", "true");
-    N.reset.setAttribute("tabindex", "-1");
+    setAttributeIfChanged(N.reset, "aria-hidden", "true");
+    setAttributeIfChanged(N.reset, "tabindex", "-1");
   } else {
     N.reset.disabled = false;
-    N.reset.removeAttribute("aria-hidden");
-    N.reset.removeAttribute("tabindex");
+    removeAttributeIfPresent(N.reset, "aria-hidden");
+    removeAttributeIfPresent(N.reset, "tabindex");
   }
 }
 
@@ -101,19 +138,19 @@ export function applyResolveState(
   if (S.solved) {
     resolve.style.display = "";
     resolve.disabled = true;
-    resolve.setAttribute("aria-hidden", "true");
-    resolve.setAttribute("tabindex", "-1");
-    resolve.classList.add("ortho-resolve-faded");
+    setAttributeIfChanged(resolve, "aria-hidden", "true");
+    setAttributeIfChanged(resolve, "tabindex", "-1");
+    setClassPresence(resolve, "ortho-resolve-faded", true);
     return;
   }
 
-  resolve.classList.remove("ortho-resolve-faded");
+  setClassPresence(resolve, "ortho-resolve-faded", false);
 
   if (S.gate.mode === "off") {
     resolve.disabled = true;
     resolve.style.display = "none";
-    resolve.setAttribute("aria-hidden", "true");
-    resolve.setAttribute("tabindex", "-1");
+    setAttributeIfChanged(resolve, "aria-hidden", "true");
+    setAttributeIfChanged(resolve, "tabindex", "-1");
     return;
   }
 
@@ -121,21 +158,21 @@ export function applyResolveState(
     if (S.tries >= S.gate.n) {
       resolve.disabled = false;
       resolve.style.display = "";
-      resolve.removeAttribute("aria-hidden");
-      resolve.removeAttribute("tabindex");
+      removeAttributeIfPresent(resolve, "aria-hidden");
+      removeAttributeIfPresent(resolve, "tabindex");
     } else {
       resolve.disabled = true;
       resolve.style.display = "none";
-      resolve.setAttribute("aria-hidden", "true");
-      resolve.setAttribute("tabindex", "-1");
+      setAttributeIfChanged(resolve, "aria-hidden", "true");
+      setAttributeIfChanged(resolve, "tabindex", "-1");
     }
     return;
   }
 
   resolve.disabled = false;
   resolve.style.display = "";
-  resolve.removeAttribute("aria-hidden");
-  resolve.removeAttribute("tabindex");
+  removeAttributeIfPresent(resolve, "aria-hidden");
+  removeAttributeIfPresent(resolve, "tabindex");
 }
 
 export function syncUid(stateMap: Record<string, OrthographyState>, uid: string): void {
