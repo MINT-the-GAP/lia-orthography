@@ -454,6 +454,19 @@ function $f322f17f239b2b8e$export$702081a5d9f33ebc(stateMap, flags) {
 
 
 
+const $a541277566782c5f$var$NATIVE_QUIZ_SOLUTION = "orthography-check";
+function $a541277566782c5f$var$setNativeQuizAnswer(uid, correct) {
+    const host = document.getElementById("orthography-native-" + uid);
+    const input = host?.querySelector("input.lia-quiz__input");
+    if (!input) return;
+    const value = correct ? $a541277566782c5f$var$NATIVE_QUIZ_SOLUTION : "";
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+    if (setter) setter.call(input, value);
+    else input.value = value;
+    input.dispatchEvent(new Event("input", {
+        bubbles: true
+    }));
+}
 function $a541277566782c5f$var$disableBrowserWritingAids(root) {
     const scope = root || document;
     const elements = scope.querySelectorAll("input, textarea, [contenteditable='true'], [contenteditable=''], [contenteditable='plaintext-only']");
@@ -547,6 +560,7 @@ function $a541277566782c5f$var$handleCheck(stateMap, flags, uid, ev) {
     if (!N.input) return;
     const beforeValue = N.input.value;
     const wasCorrect = (0, $faefaad95e5fcca0$export$9fee1bbbe4aa216c)(beforeValue, S.doubleSpaceHelp) === (0, $faefaad95e5fcca0$export$9fee1bbbe4aa216c)(S.solution, S.doubleSpaceHelp);
+    $a541277566782c5f$var$setNativeQuizAnswer(uid, wasCorrect);
     const token = ++S.checkToken;
     setTimeout(()=>$a541277566782c5f$var$finishCheck(stateMap, flags, uid, token, beforeValue, wasCorrect), 0);
 }

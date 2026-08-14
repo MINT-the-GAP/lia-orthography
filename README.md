@@ -1,6 +1,6 @@
 ﻿<!--
 author:   MINT-the-GAP, Martin Lommatzsch, Jihad Hyadi
-version:  1.2.0
+version:  1.2.1
 language: en
 edit: true
 narrator: US English Female
@@ -27,21 +27,7 @@ script:   ./dist/index.js
 </div>
 
 @1
-[[!]]
-<script modify="false">
-(function(){
-  const el  = document.getElementById("orthography-input-@0");
-  const sol = document.getElementById("orthography-solution-@0");
-  if(!el || !sol) return false;
-
-  const doubleSpaceHelp = /\bdoublespacehelp\b\s*=\s*["']?(?:on|true|1|yes)(?=["'\s>]|$)/i.test("@'1");
-  const norm = s => {
-    const value = String(s || "").normalize("NFKC").replace(/[\u201E\u201C\u201D\u201F\u00AB\u00BB\u2039\u203A\u0022]/g, '"').replace(/[\u201A\u2018\u2019\u201B]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase();
-    return doubleSpaceHelp ? value.trim().replace(/\s+/g, " ") : value;
-  };
-  return norm(el.value) === norm(sol.textContent);
-})()
-</script>
+<span id="orthography-native-@0" class="orthography-native" data-ortho-uid="@0" style="display:none" aria-hidden="true">[[orthography-check]]</span>
 @end
 
 @orthographytext: @orthographytext_(@uid,`@0`,`@1`,`@2`)
@@ -63,21 +49,7 @@ script:   ./dist/index.js
 </div>
 
 @1
-[[!]]
-<script modify="false">
-(function(){
-  const el  = document.getElementById("orthographytext-input-@0");
-  const sol = document.getElementById("orthographytext-solution-@0");
-  if(!el || !sol) return false;
-
-  const doubleSpaceHelp = /\bdoublespacehelp\b\s*=\s*["']?(?:on|true|1|yes)(?=["'\s>]|$)/i.test("@'1");
-  const norm = s => {
-    const value = String(s || "").normalize("NFKC").replace(/[\u201E\u201C\u201D\u201F\u00AB\u00BB\u2039\u203A\u0022]/g, '"').replace(/[\u201A\u2018\u2019\u201B]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase();
-    return doubleSpaceHelp ? value.trim().replace(/\s+/g, " ") : value;
-  };
-  return norm(el.value) === norm(sol.textContent);
-})()
-</script>
+<span id="orthography-native-@0" class="orthography-native" data-ortho-uid="@0" style="display:none" aria-hidden="true">[[orthography-check]]</span>
 @end
 
 @linenumbers
@@ -99,7 +71,7 @@ ${numbered}`;
 </script>
 @end
 
-@diktat: @diktat_(@uid,@0)
+@diktat: @diktat_(@uid,`@0`)
 
 @diktat_
 <span class="lia-diktat" id="lia-diktat-@0">{|>}{<span class="lia-diktat-measure" style="position:absolute;left:-10000px;top:auto;width:auto;height:auto;overflow:hidden;white-space:pre;">@1</span>}[[ @1 ]]</span>
@@ -143,10 +115,16 @@ Creates an orthography exercise where students correct spelling or punctuation. 
 
 Add `doublespacehelp="on"` to `@0` to trim surrounding whitespace and collapse every whitespace run to one space before grading. Without it, whitespace remains significant.
 
-A native LiaScript detailed-solution block can follow the macro call. It stays hidden until the quiz is solved or resolved.
+Native LiaScript hints (`[[?]]`) and a detailed-solution block can follow the
+macro call. Put the hints before the solution block; the solution stays hidden
+until the quiz is solved or resolved.
 
 ``` markdown
-@orthography(`<!-- data-solution-button="2" doublespacehelp="on" -->`,`Es ist jetze um sechse.`,`Es ist jetzt um sechs.`)
+@orthography(`<!-- data-solution-button="4" doublespacehelp="on" -->`,`Es ist jetze um sechse.`,`Es ist jetzt um sechs.`)
+[[?]] Hinweis
+**************
+Musterlösungstext
+**************
 ```
 
 With that option, `   Hallo,   mein  Name  ist Martin.  ` is accepted for the solution `Hallo, mein Name ist Martin.`. Missing word spaces remain errors.
@@ -208,6 +186,14 @@ Creates a dictation gap where the word is read aloud by the narrator and student
 **Parameters:**
 - `@0` — The word or phrase to dictate
 
+Wrap phrases containing commas in backticks so LiaScript treats the complete
+phrase as one macro argument. The public macro preserves those backticks while
+forwarding the phrase internally.
+
+``` markdown
+@diktat(`Mia weiß, dass zuverlässige Freundschaften gegenseitiges Vertrauen brauchen.`)
+```
+
 All `@diktat` gaps in one paragraph form one LiaScript multi-quiz. A native detailed-solution block placed directly after that paragraph belongs to the complete dictation and stays hidden until it is solved or resolved.
 
 ``` markdown
@@ -236,7 +222,6 @@ The following exercises combine dictation and orthography in a realistic classro
 **Example 2:** Listen to the words that fill the gaps and write them into the gaps.
 
 Anna ging in einen @diktat(Zoo). Dort konnte sie auf einem @diktat(Lama) reiten.
-
 **************
 Musterlösungstext
 **************
@@ -262,7 +247,7 @@ Musterlösungstext
 **Example 5:** Correct the spelling mistakes in the sentence.
 
 @orthography(`<!-- data-solution-button="4" doublespacehelp="on" -->`,`Es ist jetze um sechse.`,`Es ist jetzt um sechs.`)
-
+[[?]] Hinweis
 **************
 Musterlösungstext
 **************
@@ -279,7 +264,7 @@ Musterlösungstext
 If you prefer not to use `import:`, copy the following block directly into the header of your LiaScript document.
 
 ``` markdown
-script:   https://cdn.jsdelivr.net/gh/MINT-the-GAP/lia-orthography@0.0.1/dist/index.js
+script:   https://cdn.jsdelivr.net/gh/MINT-the-GAP/lia-orthography@main/dist/index.js
 
 @orthography: @orthography_(@uid,`@0`,`@1`,`@2`)
 
@@ -300,21 +285,7 @@ script:   https://cdn.jsdelivr.net/gh/MINT-the-GAP/lia-orthography@0.0.1/dist/in
 </div>
 
 @1
-[[!]]
-<script modify="false">
-(function(){
-  const el  = document.getElementById("orthography-input-@0");
-  const sol = document.getElementById("orthography-solution-@0");
-  if(!el || !sol) return false;
-
-  const doubleSpaceHelp = /\bdoublespacehelp\b\s*=\s*["']?(?:on|true|1|yes)(?=["'\s>]|$)/i.test("@'1");
-  const norm = s => {
-    const value = String(s || "").normalize("NFKC").replace(/[\u201E\u201C\u201D\u201F\u00AB\u00BB\u2039\u203A\u0022]/g, '"').replace(/[\u201A\u2018\u2019\u201B]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase();
-    return doubleSpaceHelp ? value.trim().replace(/\s+/g, " ") : value;
-  };
-  return norm(el.value) === norm(sol.textContent);
-})()
-</script>
+<span id="orthography-native-@0" class="orthography-native" data-ortho-uid="@0" style="display:none" aria-hidden="true">[[orthography-check]]</span>
 @end
 
 @orthographytext: @orthographytext_(@uid,`@0`,`@1`,`@2`)
@@ -336,21 +307,7 @@ script:   https://cdn.jsdelivr.net/gh/MINT-the-GAP/lia-orthography@0.0.1/dist/in
 </div>
 
 @1
-[[!]]
-<script modify="false">
-(function(){
-  const el  = document.getElementById("orthographytext-input-@0");
-  const sol = document.getElementById("orthographytext-solution-@0");
-  if(!el || !sol) return false;
-
-  const doubleSpaceHelp = /\bdoublespacehelp\b\s*=\s*["']?(?:on|true|1|yes)(?=["'\s>]|$)/i.test("@'1");
-  const norm = s => {
-    const value = String(s || "").normalize("NFKC").replace(/[\u201E\u201C\u201D\u201F\u00AB\u00BB\u2039\u203A\u0022]/g, '"').replace(/[\u201A\u2018\u2019\u201B]/g, "'").replace(/\u00A0/g, " ").toLocaleLowerCase();
-    return doubleSpaceHelp ? value.trim().replace(/\s+/g, " ") : value;
-  };
-  return norm(el.value) === norm(sol.textContent);
-})()
-</script>
+<span id="orthography-native-@0" class="orthography-native" data-ortho-uid="@0" style="display:none" aria-hidden="true">[[orthography-check]]</span>
 @end
 
 @linenumbers
@@ -372,7 +329,7 @@ ${numbered}`;
 </script>
 @end
 
-@diktat: @diktat_(@uid,@0)
+@diktat: @diktat_(@uid,`@0`)
 
 @diktat_
 <span class="lia-diktat" id="lia-diktat-@0">{|>}{<span class="lia-diktat-measure" style="position:absolute;left:-10000px;top:auto;width:auto;height:auto;overflow:hidden;white-space:pre;">@1</span>}[[ @1 ]]</span>

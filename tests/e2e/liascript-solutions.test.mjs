@@ -12,6 +12,8 @@ const TEMPLATE_URL =
   "https://raw.githubusercontent.com/MINT-the-GAP/lia-orthography/__local_candidate__/README.md";
 const BUNDLE_URL = new URL("./dist/index.js", TEMPLATE_URL).href;
 const COURSE_URL = "https://lia-orthography.invalid/solution-blocks.md";
+const DIKTAT_SENTENCE =
+  "Mia weiß, dass zuverlässige Freundschaften gegenseitiges Vertrauen brauchen.";
 
 const [template, bundle] = await Promise.all([
   readFile(new URL("../../README.md", import.meta.url), "utf8"),
@@ -39,9 +41,12 @@ Anna ging in einen @diktat(Zoo). Dort konnte sie auf einem @diktat(Lama) reiten.
 <span id="diktat-musterloesung">Diktat-Musterlösung</span>
 **************
 
-@orthography(\`<!-- data-solution-button="4" doublespacehelp="on" -->\`,\`Hallo mein Name ist Martinn.\`,\`Hallo, mein Name ist Martin.\`)
+@diktat(\`${DIKTAT_SENTENCE}\`)
+
+@orthography(\`<!-- data-solution-button="4" doublespacehelp="on" -->\`,\`Es ist jetze um sechse.\`,\`Es ist jetzt um sechs.\`)
+[[?]] <span id="orthography-hinweis">Hinweis</span>
 **************
-<span id="orthography-musterloesung">Orthography-Musterlösung</span>
+<span id="orthography-musterloesung">Musterlösungstext</span>
 **************
 `;
 
@@ -130,6 +135,11 @@ async function openCourse(browser) {
   for (const url of candidateUrls) {
     assert.equal(statuses.get(url), 200, `${url} did not load successfully`);
   }
+  assert.equal(
+    await page.locator(".lia-quiz").count(),
+    3,
+    "both dictations and the hint-bearing orthography quiz must stay separate",
+  );
 
   return { context, failures, page, pageErrors };
 }
@@ -137,6 +147,7 @@ async function openCourse(browser) {
 function quizLocators(page) {
   return {
     diktat: page.locator(".lia-quiz:not([data-ortho-uid])").first(),
+    diktatSentence: page.locator(".lia-quiz:not([data-ortho-uid])").nth(1),
     orthography: page.locator('.lia-quiz[data-ortho-uid]').first(),
   };
 }
@@ -147,6 +158,7 @@ async function isVisible(page, selector) {
 
 async function assertInitiallyHidden(page) {
   assert.equal(await isVisible(page, "#diktat-musterloesung"), false);
+  assert.equal(await isVisible(page, "#orthography-hinweis"), false);
   assert.equal(await isVisible(page, "#orthography-musterloesung"), false);
 }
 
@@ -247,8 +259,40 @@ async function solveBoth(browser) {
     await assertLineNumbers(page);
     await assertPluginObserverSettles(page);
     const quizzes = quizLocators(page);
+    const orthographyInput = page.locator('[id^="orthography-input-"]');
+    const orthographyUid = await orthographyInput.getAttribute("data-ortho-uid");
+    assert.ok(orthographyUid);
+
+    const hint = quizzes.orthography.locator(".lia-quiz__hint");
+    const resolve = quizzes.orthography.locator(".lia-quiz__resolve");
+    const nativeInput = page.locator(
+      `#orthography-native-${orthographyUid} input.lia-quiz__input`,
+    );
+    assert.equal(
+      await quizzes.orthography.getAttribute("data-solution-button"),
+      "4",
+    );
+    assert.equal(await quizzes.orthography.getAttribute("doublespacehelp"), "on");
+    assert.equal(await nativeInput.count(), 1);
+    assert.equal(await hint.count(), 1);
+    assert.equal(await resolve.isVisible(), false);
+    await hint.click();
+    await page.locator("#orthography-hinweis").waitFor({ state: "visible" });
+    assert.equal(await isVisible(page, "#orthography-musterloesung"), false);
+    assert.equal(await resolve.isVisible(), false);
+    assert.equal(
+      await page.evaluate(
+        (uid) => window.__ORTHOGRAPHY_EXPORT_V8__?.getAllStates?.()[uid]?.tries,
+        orthographyUid,
+      ),
+      0,
+    );
+
     const diktatInputs = page.locator(".lia-diktat input");
-    assert.equal(await diktatInputs.count(), 2);
+    const diktatMeasures = page.locator(".lia-diktat-measure");
+    assert.equal(await diktatInputs.count(), 3);
+    assert.equal(await diktatMeasures.count(), 3);
+    assert.equal(await diktatMeasures.nth(2).textContent(), DIKTAT_SENTENCE);
     await diktatInputs.nth(0).fill("Zoo");
     await diktatInputs.nth(1).fill("Lama");
     await quizzes.diktat.locator(".lia-quiz__check").click();
@@ -260,11 +304,24 @@ async function solveBoth(browser) {
           ?.classList.contains("solved"),
     );
 
-    const orthographyInput = page.locator('[id^="orthography-input-"]');
-    const orthographyUid = await orthographyInput.getAttribute("data-ortho-uid");
-    assert.ok(orthographyUid);
+    const sentenceInput = diktatInputs.nth(2);
+    await sentenceInput.fill("Mia weiß");
+    await quizzes.diktatSentence.locator(".lia-quiz__check").click();
+    await page.waitForTimeout(100);
+    assert.equal(
+      await quizzes.diktatSentence.evaluate((quiz) => quiz.classList.contains("solved")),
+      false,
+    );
+    await sentenceInput.fill(DIKTAT_SENTENCE);
+    await quizzes.diktatSentence.locator(".lia-quiz__check").click();
+    await page.waitForFunction(() =>
+      document
+        .querySelectorAll(".lia-quiz:not([data-ortho-uid])")[1]
+        ?.classList.contains("solved"),
+    );
+    assert.equal(await sentenceInput.inputValue(), DIKTAT_SENTENCE);
 
-    await orthographyInput.fill("Hallo,mein Name ist Martin.");
+    await orthographyInput.fill("Es istjetzt um sechs.");
     await quizzes.orthography.locator(".lia-quiz__check").click();
     await page.waitForFunction(
       (uid) => window.__ORTHOGRAPHY_EXPORT_V8__?.getAllStates?.()[uid]?.tries >= 1,
@@ -275,14 +332,16 @@ async function solveBoth(browser) {
       await quizzes.orthography.evaluate((quiz) => quiz.classList.contains("solved")),
       false,
     );
+    assert.equal(await nativeInput.inputValue(), "");
 
-    await orthographyInput.fill("   Hallo,   mein  Name  ist Martin.  ");
+    await orthographyInput.fill("   Es ist   jetzt um sechs.  ");
     await quizzes.orthography.locator(".lia-quiz__check").click();
     await page.locator("#orthography-musterloesung").waitFor({ state: "visible" });
     await page.waitForFunction(() =>
       document.querySelector('.lia-quiz[data-ortho-uid]')?.classList.contains("solved"),
     );
-    assert.equal(await orthographyInput.inputValue(), "Hallo, mein Name ist Martin.");
+    assert.equal(await orthographyInput.inputValue(), "Es ist jetzt um sechs.");
+    assert.equal(await nativeInput.inputValue(), "orthography-check");
     await assertClean(session);
   } finally {
     await context.close();
@@ -339,6 +398,7 @@ async function resolveBoth(browser) {
       const quiz = document.querySelector('.lia-quiz[data-ortho-uid]');
       return quiz?.classList.contains("resolved") || quiz?.classList.contains("solved");
     });
+    assert.equal(await input.inputValue(), "Es ist jetzt um sechs.");
     await assertClean(session);
   } finally {
     await context.close();

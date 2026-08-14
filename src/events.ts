@@ -7,6 +7,27 @@ import { getNodes, ensureStyle } from "./dom";
 import { ensureState } from "./state";
 import { syncUid, syncAll, scheduleSync, setInputValue } from "./sync";
 
+const NATIVE_QUIZ_SOLUTION = "orthography-check";
+
+function setNativeQuizAnswer(uid: string, correct: boolean): void {
+  const host = document.getElementById("orthography-native-" + uid);
+  const input = host?.querySelector<HTMLInputElement>("input.lia-quiz__input");
+  if (!input) return;
+
+  const value = correct ? NATIVE_QUIZ_SOLUTION : "";
+  const setter = Object.getOwnPropertyDescriptor(
+    HTMLInputElement.prototype,
+    "value"
+  )?.set;
+
+  if (setter) {
+    setter.call(input, value);
+  } else {
+    input.value = value;
+  }
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
 function disableBrowserWritingAids(root?: ParentNode | null): void {
   const scope = root || document;
   const elements = scope.querySelectorAll<HTMLElement>(
@@ -165,6 +186,7 @@ function handleCheck(
   const wasCorrect =
     normalizeAnswer(beforeValue, S.doubleSpaceHelp) ===
     normalizeAnswer(S.solution, S.doubleSpaceHelp);
+  setNativeQuizAnswer(uid, wasCorrect);
   const token = ++S.checkToken;
 
   setTimeout(() => finishCheck(stateMap, flags, uid, token, beforeValue, wasCorrect), 0);
