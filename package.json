@@ -1,6 +1,6 @@
 {
   "name": "lia-orthography",
-  "version": "0.0.1",
+  "version": "1.2.1",
   "description": "LiaScript plugin — orthography exercises with gated resolve, sticky solutions, and reset",
   "main": "dist/index.js",
   "scripts": {

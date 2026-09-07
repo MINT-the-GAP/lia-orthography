@@ -65,8 +65,17 @@ class OrthographyModule {
   }
 }
 
-const ROOT = getRootWindow() as any;
 const KEY = "__ORTHOGRAPHY_EXPORT_V8__";
+
+/**
+ * The bundle can be evaluated more than once (LiaScript may re-inject it), so the
+ * module is published on the root window under KEY and only ever constructed once.
+ */
+type OrthographyRoot = Window & {
+  [KEY]?: OrthographyModule;
+};
+
+const ROOT = getRootWindow() as OrthographyRoot;
 
 if (!ROOT[KEY]) {
   const MOD = new OrthographyModule();

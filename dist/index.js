@@ -455,6 +455,12 @@ function $f322f17f239b2b8e$export$702081a5d9f33ebc(stateMap, flags) {
 
 
 const $a541277566782c5f$var$NATIVE_QUIZ_SOLUTION = "orthography-check";
+const $a541277566782c5f$var$ARROW_KEYS = new Set([
+    "ArrowLeft",
+    "ArrowRight",
+    "ArrowUp",
+    "ArrowDown"
+]);
 function $a541277566782c5f$var$setNativeQuizAnswer(uid, correct) {
     const host = document.getElementById("orthography-native-" + uid);
     const input = host?.querySelector("input.lia-quiz__input");
@@ -482,9 +488,13 @@ function $a541277566782c5f$var$disableBrowserWritingAids(root) {
         element.setAttribute("data-enable-grammarly", "false");
     });
 }
-function $a541277566782c5f$var$getUidFromOrthographyInput(node) {
+/** Nearest ancestor already tagged with a uid by getNodes/ensureQuizBinding. */ function $a541277566782c5f$var$getTaggedUid(node) {
     const direct = node.closest("[data-ortho-uid]");
-    if (direct && direct.dataset && direct.dataset.orthoUid) return String(direct.dataset.orthoUid);
+    return direct?.dataset?.orthoUid ? String(direct.dataset.orthoUid) : "";
+}
+function $a541277566782c5f$var$getUidFromOrthographyInput(node) {
+    const tagged = $a541277566782c5f$var$getTaggedUid(node);
+    if (tagged) return tagged;
     const input = node.closest('[id^="orthography-input-"], [id^="orthographytext-input-"], [data-id^="lia-quiz-"]');
     if (input) {
         if (input.id) {
@@ -500,8 +510,8 @@ function $a541277566782c5f$var$getUidFromOrthographyInput(node) {
     return "";
 }
 function $a541277566782c5f$var$getUidFromReset(node) {
-    const direct = node.closest("[data-ortho-uid]");
-    if (direct && direct.dataset && direct.dataset.orthoUid) return String(direct.dataset.orthoUid);
+    const tagged = $a541277566782c5f$var$getTaggedUid(node);
+    if (tagged) return tagged;
     if (node.id) {
         const uid = (0, $faefaad95e5fcca0$export$51f7daf7ba0f1187)(node.id, "orthography-reset-") || (0, $faefaad95e5fcca0$export$51f7daf7ba0f1187)(node.id, "orthographytext-reset-");
         if (uid) return uid;
@@ -509,12 +519,15 @@ function $a541277566782c5f$var$getUidFromReset(node) {
     return "";
 }
 function $a541277566782c5f$var$getUidFromOrthographyControl(node) {
-    const direct = node.closest("[data-ortho-uid]");
-    if (direct && direct.dataset && direct.dataset.orthoUid) return String(direct.dataset.orthoUid);
-    const control = node.closest(".lia-quiz__control");
-    if (control && control.dataset && control.dataset.orthoUid) return String(control.dataset.orthoUid);
-    const quiz = node.closest(".lia-quiz");
-    if (quiz && quiz.dataset && quiz.dataset.orthoUid) return String(quiz.dataset.orthoUid);
+    const tagged = $a541277566782c5f$var$getTaggedUid(node);
+    if (tagged) return tagged;
+    for (const selector of [
+        ".lia-quiz__control",
+        ".lia-quiz"
+    ]){
+        const host = node.closest(selector);
+        if (host?.dataset?.orthoUid) return String(host.dataset.orthoUid);
+    }
     return "";
 }
 function $a541277566782c5f$var$handleInput(stateMap, uid) {
@@ -524,13 +537,14 @@ function $a541277566782c5f$var$handleInput(stateMap, uid) {
     if (!N.input) return;
     S.liveValue = N.input.value;
 }
+function $a541277566782c5f$var$suppressEvent(ev) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    ev.stopImmediatePropagation();
+}
 function $a541277566782c5f$var$handleReset(stateMap, uid, ev) {
     const S = (0, $a05669264f67e39b$export$b637efaa3fcc9599)(stateMap, uid);
-    if (ev) {
-        ev.preventDefault();
-        ev.stopPropagation();
-        if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
-    }
+    if (ev) $a541277566782c5f$var$suppressEvent(ev);
     if (S.solved) return;
     S.liveValue = S.start;
     (0, $f322f17f239b2b8e$export$d395e3b20a2c5108)(uid, S.cfg, S.start);
@@ -549,11 +563,7 @@ function $a541277566782c5f$var$finishCheck(stateMap, flags, uid, token, beforeVa
 function $a541277566782c5f$var$handleCheck(stateMap, flags, uid, ev) {
     const S = (0, $a05669264f67e39b$export$b637efaa3fcc9599)(stateMap, uid);
     if (S.solved) {
-        if (ev) {
-            ev.preventDefault();
-            ev.stopPropagation();
-            if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
-        }
+        if (ev) $a541277566782c5f$var$suppressEvent(ev);
         return;
     }
     const N = (0, $2f96dbadf81a4e19$export$d668e62f6e0051f4)(uid, S.cfg);
@@ -567,11 +577,7 @@ function $a541277566782c5f$var$handleCheck(stateMap, flags, uid, ev) {
 function $a541277566782c5f$var$handleResolve(stateMap, flags, uid, ev) {
     const S = (0, $a05669264f67e39b$export$b637efaa3fcc9599)(stateMap, uid);
     if (S.solved || S.resolvePending) {
-        if (ev) {
-            ev.preventDefault();
-            ev.stopPropagation();
-            if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
-        }
+        if (ev) $a541277566782c5f$var$suppressEvent(ev);
         return;
     }
     S.resolvePending = true;
@@ -648,24 +654,18 @@ function $a541277566782c5f$export$2baef26cee7194d4(stateMap, flags, observer) {
         if (!uid) return;
         $a541277566782c5f$var$handleInput(stateMap, uid);
     }, true);
-    document.addEventListener("keydown", (ev)=>{
-        if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight" && ev.key !== "ArrowUp" && ev.key !== "ArrowDown") return;
+    // Keep arrow keys inside the input: LiaScript uses them for slide navigation,
+    // which would otherwise steal the caret while the learner is typing.
+    const keepArrowKeysLocal = (ev)=>{
+        if (!$a541277566782c5f$var$ARROW_KEYS.has(ev.key)) return;
         const target = ev.target;
         if (!(target instanceof Element)) return;
-        const uid = $a541277566782c5f$var$getUidFromOrthographyInput(target);
-        if (!uid) return;
+        if (!$a541277566782c5f$var$getUidFromOrthographyInput(target)) return;
         ev.stopPropagation();
-        if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
-    }, true);
-    document.addEventListener("keyup", (ev)=>{
-        if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight" && ev.key !== "ArrowUp" && ev.key !== "ArrowDown") return;
-        const target = ev.target;
-        if (!(target instanceof Element)) return;
-        const uid = $a541277566782c5f$var$getUidFromOrthographyInput(target);
-        if (!uid) return;
-        ev.stopPropagation();
-        if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
-    }, true);
+        ev.stopImmediatePropagation();
+    };
+    document.addEventListener("keydown", keepArrowKeysLocal, true);
+    document.addEventListener("keyup", keepArrowKeysLocal, true);
     document.addEventListener("click", (ev)=>{
         const target = ev.target;
         if (!(target instanceof Element)) return;
@@ -766,8 +766,8 @@ class $882b6d93070905b3$var$OrthographyModule {
         };
     }
 }
-const $882b6d93070905b3$var$ROOT = (0, $faefaad95e5fcca0$export$58e4a8be3070ab87)();
 const $882b6d93070905b3$var$KEY = "__ORTHOGRAPHY_EXPORT_V8__";
+const $882b6d93070905b3$var$ROOT = (0, $faefaad95e5fcca0$export$58e4a8be3070ab87)();
 if (!$882b6d93070905b3$var$ROOT[$882b6d93070905b3$var$KEY]) {
     const MOD = new $882b6d93070905b3$var$OrthographyModule();
     $882b6d93070905b3$var$ROOT[$882b6d93070905b3$var$KEY] = MOD;

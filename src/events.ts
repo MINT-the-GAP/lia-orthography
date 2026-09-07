@@ -9,6 +9,8 @@ import { syncUid, syncAll, scheduleSync, setInputValue } from "./sync";
 
 const NATIVE_QUIZ_SOLUTION = "orthography-check";
 
+const ARROW_KEYS = new Set(["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"]);
+
 function setNativeQuizAnswer(uid: string, correct: boolean): void {
   const host = document.getElementById("orthography-native-" + uid);
   const input = host?.querySelector<HTMLInputElement>("input.lia-quiz__input");
@@ -49,11 +51,15 @@ function disableBrowserWritingAids(root?: ParentNode | null): void {
   });
 }
 
-function getUidFromOrthographyInput(node: Element): string {
+/** Nearest ancestor already tagged with a uid by getNodes/ensureQuizBinding. */
+function getTaggedUid(node: Element): string {
   const direct = node.closest<HTMLElement>("[data-ortho-uid]");
-  if (direct && direct.dataset && direct.dataset.orthoUid) {
-    return String(direct.dataset.orthoUid);
-  }
+  return direct?.dataset?.orthoUid ? String(direct.dataset.orthoUid) : "";
+}
+
+function getUidFromOrthographyInput(node: Element): string {
+  const tagged = getTaggedUid(node);
+  if (tagged) return tagged;
 
   const input = node.closest<HTMLElement>('[id^="orthography-input-"], [id^="orthographytext-input-"], [data-id^="lia-quiz-"]');
   if (input) {
@@ -74,10 +80,8 @@ function getUidFromOrthographyInput(node: Element): string {
 }
 
 function getUidFromReset(node: Element): string {
-  const direct = node.closest<HTMLElement>("[data-ortho-uid]");
-  if (direct && direct.dataset && direct.dataset.orthoUid) {
-    return String(direct.dataset.orthoUid);
-  }
+  const tagged = getTaggedUid(node);
+  if (tagged) return tagged;
 
   if (node.id) {
     const uid =
@@ -90,19 +94,12 @@ function getUidFromReset(node: Element): string {
 }
 
 function getUidFromOrthographyControl(node: Element): string {
-  const direct = node.closest<HTMLElement>("[data-ortho-uid]");
-  if (direct && direct.dataset && direct.dataset.orthoUid) {
-    return String(direct.dataset.orthoUid);
-  }
+  const tagged = getTaggedUid(node);
+  if (tagged) return tagged;
 
-  const control = node.closest<HTMLElement>(".lia-quiz__control");
-  if (control && control.dataset && control.dataset.orthoUid) {
-    return String(control.dataset.orthoUid);
-  }
-
-  const quiz = node.closest<HTMLElement>(".lia-quiz");
-  if (quiz && quiz.dataset && quiz.dataset.orthoUid) {
-    return String(quiz.dataset.orthoUid);
+  for (const selector of [".lia-quiz__control", ".lia-quiz"]) {
+    const host = node.closest<HTMLElement>(selector);
+    if (host?.dataset?.orthoUid) return String(host.dataset.orthoUid);
   }
 
   return "";
@@ -118,6 +115,12 @@ function handleInput(stateMap: Record<string, OrthographyState>, uid: string): v
   S.liveValue = N.input.value;
 }
 
+function suppressEvent(ev: Event): void {
+  ev.preventDefault();
+  ev.stopPropagation();
+  ev.stopImmediatePropagation();
+}
+
 function handleReset(
   stateMap: Record<string, OrthographyState>,
   uid: string,
@@ -125,11 +128,7 @@ function handleReset(
 ): void {
   const S = ensureState(stateMap, uid);
 
-  if (ev) {
-    ev.preventDefault();
-    ev.stopPropagation();
-    if ((ev as any).stopImmediatePropagation) (ev as any).stopImmediatePropagation();
-  }
+  if (ev) suppressEvent(ev);
 
   if (S.solved) return;
 
@@ -171,11 +170,7 @@ function handleCheck(
 ): void {
   const S = ensureState(stateMap, uid);
   if (S.solved) {
-    if (ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      if ((ev as any).stopImmediatePropagation) (ev as any).stopImmediatePropagation();
-    }
+    if (ev) suppressEvent(ev);
     return;
   }
 
@@ -201,11 +196,7 @@ function handleResolve(
   const S = ensureState(stateMap, uid);
 
   if (S.solved || S.resolvePending) {
-    if (ev) {
-      ev.preventDefault();
-      ev.stopPropagation();
-      if ((ev as any).stopImmediatePropagation) (ev as any).stopImmediatePropagation();
-    }
+    if (ev) suppressEvent(ev);
     return;
   }
 
@@ -299,35 +290,19 @@ export function startGlobal(
     handleInput(stateMap, uid);
   }, true);
 
-  document.addEventListener("keydown", (ev) => {
-    if (
-      ev.key !== "ArrowLeft" &&
-      ev.key !== "ArrowRight" &&
-      ev.key !== "ArrowUp" &&
-      ev.key !== "ArrowDown"
-    ) return;
+  // Keep arrow keys inside the input: LiaScript uses them for slide navigation,
+  // which would otherwise steal the caret while the learner is typing.
+  const keepArrowKeysLocal = (ev: KeyboardEvent) => {
+    if (!ARROW_KEYS.has(ev.key)) return;
     const target = ev.target;
     if (!(target instanceof Element)) return;
-    const uid = getUidFromOrthographyInput(target);
-    if (!uid) return;
+    if (!getUidFromOrthographyInput(target)) return;
     ev.stopPropagation();
-    if ((ev as any).stopImmediatePropagation) (ev as any).stopImmediatePropagation();
-  }, true);
+    ev.stopImmediatePropagation();
+  };
 
-  document.addEventListener("keyup", (ev) => {
-    if (
-      ev.key !== "ArrowLeft" &&
-      ev.key !== "ArrowRight" &&
-      ev.key !== "ArrowUp" &&
-      ev.key !== "ArrowDown"
-    ) return;
-    const target = ev.target;
-    if (!(target instanceof Element)) return;
-    const uid = getUidFromOrthographyInput(target);
-    if (!uid) return;
-    ev.stopPropagation();
-    if ((ev as any).stopImmediatePropagation) (ev as any).stopImmediatePropagation();
-  }, true);
+  document.addEventListener("keydown", keepArrowKeysLocal, true);
+  document.addEventListener("keyup", keepArrowKeysLocal, true);
 
   document.addEventListener("click", (ev) => {
     const target = ev.target;
