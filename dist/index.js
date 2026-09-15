@@ -83,6 +83,8 @@ function $2f96dbadf81a4e19$export$b9324dd3ed41badd(installed) {
         display:block;
         margin:0;
         padding:0;
+        min-width:0;
+        container:orthography / inline-size;
       }
 
       .orthography-check{
@@ -103,6 +105,9 @@ function $2f96dbadf81a4e19$export$b9324dd3ed41badd(installed) {
         grid-column:1;
         min-width:0;
         width:100%;
+        max-width:100%;
+        box-sizing:border-box;
+        margin:0 !important;
       }
 
       .orthography-wrap > .ortho-reset-below{
@@ -113,6 +118,24 @@ function $2f96dbadf81a4e19$export$b9324dd3ed41badd(installed) {
         justify-content:center;
         white-space:nowrap;
         align-self:stretch;
+      }
+
+      /* The available widget width matters even on a wide screen with narrow cards. */
+      @container orthography (max-width:20em){
+        .orthography-wrap{
+          grid-template-columns:minmax(0, 1fr);
+        }
+
+        .orthography-wrap > .ortho-reset-below{
+          grid-column:1;
+          justify-self:start;
+          align-self:start;
+          min-width:0;
+          max-width:100%;
+          box-sizing:border-box;
+          white-space:normal;
+          overflow-wrap:anywhere;
+        }
       }
 
       .orthography-wrap[data-ortho-solved="1"] > .ortho-reset-below{

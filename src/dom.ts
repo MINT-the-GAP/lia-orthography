@@ -21,6 +21,8 @@ export function ensureStyle(installed: { done: boolean }): void {
         display:block;
         margin:0;
         padding:0;
+        min-width:0;
+        container:orthography / inline-size;
       }
 
       .orthography-check{
@@ -41,6 +43,9 @@ export function ensureStyle(installed: { done: boolean }): void {
         grid-column:1;
         min-width:0;
         width:100%;
+        max-width:100%;
+        box-sizing:border-box;
+        margin:0 !important;
       }
 
       .orthography-wrap > .ortho-reset-below{
@@ -51,6 +56,24 @@ export function ensureStyle(installed: { done: boolean }): void {
         justify-content:center;
         white-space:nowrap;
         align-self:stretch;
+      }
+
+      /* The available widget width matters even on a wide screen with narrow cards. */
+      @container orthography (max-width:20em){
+        .orthography-wrap{
+          grid-template-columns:minmax(0, 1fr);
+        }
+
+        .orthography-wrap > .ortho-reset-below{
+          grid-column:1;
+          justify-self:start;
+          align-self:start;
+          min-width:0;
+          max-width:100%;
+          box-sizing:border-box;
+          white-space:normal;
+          overflow-wrap:anywhere;
+        }
       }
 
       .orthography-wrap[data-ortho-solved="1"] > .ortho-reset-below{

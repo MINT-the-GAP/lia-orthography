@@ -84,6 +84,8 @@ ${numbered}`;
           --{{0}}--
 This plugin provides interactive orthography and dictation exercises. Students correct text in an input field and can optionally reveal the solution after a configurable number of attempts.
 
+In containers up to 20em wide, the input uses the full available width and Reset moves to the following row. This also applies to narrow cards on a wide screen. Wider containers keep the input and Reset beside each other.
+
 __Try it on LiaScript:__
 https://liascript.github.io/course/?https://raw.githubusercontent.com/MINT-the-GAP/lia-orthography/main/README.md
 
