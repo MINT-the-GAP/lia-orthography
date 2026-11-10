@@ -65,7 +65,14 @@ test("diktat re-quotes forwarded phrases so commas stay inside one argument", ()
   ));
 });
 
-test("doublespacehelp is opt-in and preserves required word spaces", () => {
+test("orthography ignores leading and trailing whitespace", () => {
+  const solution = "Das ist ein Satz.";
+
+  assert.equal(normalizeAnswer("Das ist ein Satz. "), normalizeAnswer(solution));
+  assert.equal(normalizeAnswer("\tDas ist ein Satz.\n"), normalizeAnswer(solution));
+});
+
+test("doublespacehelp is opt-in for internal whitespace and preserves required word spaces", () => {
   const solution = "Hallo, mein Name ist Martin.";
   const extraSpaces = "   Hallo,   mein  Name  ist Martin.  ";
   const missingSpace = "Hallo,mein Name ist Martin.";
@@ -82,6 +89,10 @@ test("doublespacehelp is opt-in and preserves required word spaces", () => {
   );
   assert.notEqual(
     normalizeAnswer(extraSpaces),
+    normalizeAnswer(solution),
+  );
+  assert.equal(
+    normalizeAnswer("   Hallo, mein Name ist Martin.  "),
     normalizeAnswer(solution),
   );
   assert.equal(parseDoubleSpaceHelp(""), false);

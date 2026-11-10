@@ -115,7 +115,7 @@ Creates an orthography exercise where students correct spelling or punctuation. 
 - `@1` — Initial text (may contain errors)
 - `@2` — Correct solution
 
-Add `doublespacehelp="on"` to `@0` to trim surrounding whitespace and collapse every whitespace run to one space before grading. Without it, whitespace remains significant.
+Leading and trailing whitespace is always ignored during grading, so an accidental space after the final punctuation does not count as an error. Add `doublespacehelp="on"` to `@0` to additionally collapse every whitespace run inside the answer to one space. Without it, internal whitespace remains significant.
 
 Native LiaScript hints (`[[?]]`) and a detailed-solution block can follow the
 macro call. Put the hints before the solution block; the solution stays hidden
@@ -129,7 +129,7 @@ Musterlösungstext
 **************
 ```
 
-With that option, `   Hallo,   mein  Name  ist Martin.  ` is accepted for the solution `Hallo, mein Name ist Martin.`. Missing word spaces remain errors.
+With that option, `   Hallo,   mein  Name  ist Martin.  ` is accepted for the solution `Hallo, mein Name ist Martin.`. Without the option, only the surrounding spaces are ignored. Missing word spaces remain errors in both modes.
 
 ---
 
@@ -145,7 +145,7 @@ Creates a multiline orthography exercise with a textarea. The first parameter co
 - `@1` — Initial text (may contain errors)
 - `@2` — Correct solution
 
-The optional `doublespacehelp="on"` attribute uses the same whitespace normalization as `@orthography`, including for pasted tabs or line breaks.
+Leading and trailing whitespace is ignored just as with `@orthography`. The optional `doublespacehelp="on"` attribute additionally collapses whitespace runs inside the text, including pasted tabs or line breaks.
 
 ``` markdown
 @orthographytext(`<!-- data-solution-button="2" -->`,`A student could read This text, copy parts of it, or correct small spelling mistakes inside it. The important point is that the text is long enough to wrap naturally and still remain clear, readable, and useful for a simple classroom exercise.`,`A student could read this text, copy parts of it, or correct small spelling mistakes inside it. The important point is that the text is long enough to wrap naturally and still remain clear, readable, and useful for a simple classroom exercise.`)

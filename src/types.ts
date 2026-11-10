@@ -73,9 +73,9 @@ export function norm(s: string): string {
 }
 
 export function normalizeAnswer(s: string, doubleSpaceHelp = false): string {
-  const normalized = normalizeBase(s);
+  const normalized = normalizeBase(s).trim();
   return doubleSpaceHelp
-    ? normalized.trim().replace(/\s+/g, " ")
+    ? normalized.replace(/\s+/g, " ")
     : normalized;
 }
 

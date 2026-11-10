@@ -10,8 +10,8 @@ function $faefaad95e5fcca0$export$1991ecd29cc92c6b(s) {
     return $faefaad95e5fcca0$var$normalizeBase(s).replace(/\s+/g, "");
 }
 function $faefaad95e5fcca0$export$9fee1bbbe4aa216c(s, doubleSpaceHelp = false) {
-    const normalized = $faefaad95e5fcca0$var$normalizeBase(s);
-    return doubleSpaceHelp ? normalized.trim().replace(/\s+/g, " ") : normalized;
+    const normalized = $faefaad95e5fcca0$var$normalizeBase(s).trim();
+    return doubleSpaceHelp ? normalized.replace(/\s+/g, " ") : normalized;
 }
 function $faefaad95e5fcca0$export$c5de1338b6f03943(raw) {
     if (typeof raw === "boolean") return raw;
