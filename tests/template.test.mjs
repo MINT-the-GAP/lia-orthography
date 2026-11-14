@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { normalizeAnswer, parseDoubleSpaceHelp } from "../src/types.ts";
+import {
+  getRootWindow,
+  normalizeAnswer,
+  parseDoubleSpaceHelp,
+} from "../src/types.ts";
 
 const readme = (await readFile(new URL("../README.md", import.meta.url), "utf8"))
   .replace(/\r\n/g, "\n");
@@ -70,6 +74,21 @@ test("orthography ignores leading and trailing whitespace", () => {
 
   assert.equal(normalizeAnswer("Das ist ein Satz. "), normalizeAnswer(solution));
   assert.equal(normalizeAnswer("\tDas ist ein Satz.\n"), normalizeAnswer(solution));
+});
+
+test('root-window lookup stays local when the parent is cross-origin', () => {
+  const local = {};
+  const foreignParent = {};
+  Object.defineProperty(local, 'parent', { value: foreignParent });
+  Object.defineProperty(foreignParent, 'document', {
+    get() {
+      const error = new Error('Blocked by the same-origin policy');
+      error.name = 'SecurityError';
+      throw error;
+    },
+  });
+
+  assert.equal(getRootWindow(local), local);
 });
 
 test("doublespacehelp is opt-in for internal whitespace and preserves required word spaces", () => {

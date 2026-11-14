@@ -126,10 +126,21 @@ export function parseUidFromString(v: string, prefix: string): string {
   return "";
 }
 
-export function getRootWindow(): Window {
-  let w: Window = window;
-  try {
-    while (w.parent && w.parent !== w) w = w.parent;
-  } catch(e){}
-  return w;
+export function getRootWindow(start: Window = window): Window {
+  let current = start;
+
+  for (;;) {
+    let parent: Window;
+    try {
+      parent = current.parent;
+      if (!parent || parent === current) return current;
+
+      // A cross-origin WindowProxy can be read but its document cannot.
+      // Only move upward after this same-origin probe succeeds.
+      void parent.document;
+    } catch (e) {
+      return current;
+    }
+    current = parent;
+  }
 }

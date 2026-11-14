@@ -52,12 +52,21 @@ function $faefaad95e5fcca0$export$51f7daf7ba0f1187(v, prefix) {
     if (prefix && v.indexOf(prefix) === 0) return v.slice(prefix.length);
     return "";
 }
-function $faefaad95e5fcca0$export$58e4a8be3070ab87() {
-    let w = window;
-    try {
-        while(w.parent && w.parent !== w)w = w.parent;
-    } catch (e) {}
-    return w;
+function $faefaad95e5fcca0$export$58e4a8be3070ab87(start = window) {
+    let current = start;
+    for(;;){
+        let parent;
+        try {
+            parent = current.parent;
+            if (!parent || parent === current) return current;
+            // A cross-origin WindowProxy can be read but its document cannot.
+            // Only move upward after this same-origin probe succeeds.
+            parent.document;
+        } catch (e) {
+            return current;
+        }
+        current = parent;
+    }
 }
 
 
